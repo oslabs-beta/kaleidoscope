@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app
+  name: jaeger-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: my-app
+      app: jaeger
   template:
     metadata:
       labels:
-        app: my-app
+        app: jaeger
     spec:
       containers:
-      - name: my-container
-        image: rbrtm984/easy-court
+      - name: jaeger
+        image: jaegertracing/all-in-one:latest # from jaeger on docker hub
