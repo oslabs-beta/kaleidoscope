@@ -8,11 +8,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
     "build": "webpack",
-    "dev": "webpack serve & electron .",
+    "dev": "webpack serve",
     "build-electron-main": "tsc --module ESNext electron-main.ts",
-    "start-express": "node server.js",
+    "start-express": "electron .",
     "start-react": "npm start",
-    "start-electron": "electron .",
     "start-all": "npm run dev & npm run start-express"
   },
   "author": "",

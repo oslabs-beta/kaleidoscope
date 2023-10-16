@@ -5,9 +5,6 @@ const pathModule = require('path');
 
 
 const PORT = 3000;
-const ELECTRON_PORT = 3000; // Port for your Electron app
-const WINDOW_WIDTH = 1200;
-const WINDOW_HEIGHT = 1000;
 
 const app = express();
 
@@ -29,15 +26,15 @@ app.listen(PORT, () => {
 // Function to create the main application window
 function createWindow() {
     const win = new BrowserWindow({
-    width: WINDOW_WIDTH,
-    height: WINDOW_HEIGHT,
+    width: 800,
+    height: 600,
     webPreferences: {
       nodeIntegration: true,
     }
 });
 
   // Load local React app (http://localhost:3000)
-win.loadURL('http://localhost:3000/');
+win.loadURL('http://localhost:3000');
 
 win.on('closed', () => {
     electronApp.quit();
