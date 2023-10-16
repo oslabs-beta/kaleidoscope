@@ -1,0 +1,17 @@
+receivers:
+      otlp:
+      jaeger:
+        endpoint: 0.0.0.0:14250
+
+    exporters:
+      # Configuring Jaeger exporter with the specified endpoint and setting it to insecure
+      jaeger:
+        endpoint: "jaeger-collector:14250" ### "<jaeger-backend-endpoint>"
+        insecure: true
+
+    service:
+      pipelines:
+        traces:
+          # Configuring traces pipeline to use OTLP receiver and Jaeger exporter
+          receivers: [otlp]
+          exporters: [jaeger]
