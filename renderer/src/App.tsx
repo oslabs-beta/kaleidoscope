@@ -13,6 +13,20 @@ function App() {
     }
   };
 
+  const handleInstrumentCluster = () => {
+    console.log('handleInstrumentCluster')
+    const clusterName = "some-cluster-name"; // Replace this with actual data, perhaps from user input
+    fetch("http://localhost:3000/instrument-cluster", {
+      method: "POST",
+      body: JSON.stringify({ clusterName }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    .catch(error => console.error('Fetch failed:', error));
+  };
+  
+
   return (
     <div>
       <h1>Login Page</h1>
@@ -35,6 +49,8 @@ function App() {
         />
       </div>
       <button onClick={handleLogin}>Login</button>
+      <button onClick={handleInstrumentCluster}>Instrument Cluster</button>
+
     </div>
   );
 }

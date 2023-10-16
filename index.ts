@@ -10,13 +10,22 @@ const app = express();
 
 // Enable CORS for your Electron app's domain and port
 app.use(
-cors({
-    origin: `http://localhost:3000`,
+  cors({
+    origin: `http://localhost:8081`,
 })
 );
 
+app.use(express.json());
+
 app.get('/', (req, res) => {
   // Handle your Express routes here
+});
+
+app.post("/instrument-cluster", (req, res) => {
+  // ... your logic here (e.g., kubectl commands)
+  // use library kubernetes-client to interact with k8s
+  console.log('instrumentation endpoint hit')
+  res.send('instrumentation endpoint hit')
 });
 
 app.listen(PORT, () => {
@@ -34,7 +43,7 @@ function createWindow() {
 });
 
   // Load local React app (http://localhost:3000)
-win.loadURL('http://localhost:3000');
+win.loadURL('http://localhost:8081');
 
 win.on('closed', () => {
     electronApp.quit();

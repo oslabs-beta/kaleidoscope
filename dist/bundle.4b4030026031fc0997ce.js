@@ -33385,6 +33385,18 @@ function App() {
             alert('Please enter a username and password.');
         }
     };
+    const handleInstrumentCluster = () => {
+        console.log('handleInstrumentCluster');
+        const clusterName = "some-cluster-name";
+        fetch("http://localhost:3000/instrument-cluster", {
+            method: "POST",
+            body: JSON.stringify({ clusterName }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .catch(error => console.error('Fetch failed:', error));
+    };
     return (react_1.default.createElement("div", null,
         react_1.default.createElement("h1", null, "Login Page"),
         react_1.default.createElement("div", null,
@@ -33393,7 +33405,8 @@ function App() {
         react_1.default.createElement("div", null,
             react_1.default.createElement("label", { htmlFor: "password" }, "Password:"),
             react_1.default.createElement("input", { type: "password", id: "password", value: password, onChange: (e) => setPassword(e.target.value) })),
-        react_1.default.createElement("button", { onClick: handleLogin }, "Login")));
+        react_1.default.createElement("button", { onClick: handleLogin }, "Login"),
+        react_1.default.createElement("button", { onClick: handleInstrumentCluster }, "Instrument Cluster")));
 }
 exports["default"] = App;
 
@@ -33468,4 +33481,4 @@ react_dom_1.default.render(react_1.default.createElement(react_1.default.StrictM
 /******/ 	
 /******/ })()
 ;
-//# sourceMappingURL=bundle.342028468687bccad773.js.map
+//# sourceMappingURL=bundle.4b4030026031fc0997ce.js.map
