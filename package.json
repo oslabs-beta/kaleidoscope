@@ -10,10 +10,9 @@
     "build": "webpack",
     "dev": "webpack serve",
     "build-electron-main": "tsc --module ESNext electron-main.ts",
-    "start-express": "node server.js",
+    "start-express": "electron .",
     "start-react": "npm start",
-    "start-electron": "electron .",
-    "start-all": "npm run start-react & npm run start-express"
+    "start-all": "npm run dev & npm run start-express"
   },
   "author": "",
   "license": "ISC",
