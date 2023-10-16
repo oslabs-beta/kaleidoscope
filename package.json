@@ -8,12 +8,12 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
     "build": "webpack",
-    "dev": "webpack serve",
+    "dev": "webpack serve & electron .",
     "build-electron-main": "tsc --module ESNext electron-main.ts",
     "start-express": "node server.js",
     "start-react": "npm start",
     "start-electron": "electron .",
-    "start-all": "npm run start-react & npm run start-express"
+    "start-all": "npm run dev & npm run start-express"
   },
   "author": "",
   "license": "ISC",
