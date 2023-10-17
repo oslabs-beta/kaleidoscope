@@ -1,3 +1,4 @@
+# kubectl apply -f ./yaml-folder/otel-daemonset.yaml && kubectl apply -f ./yaml-folder/otel-config.yaml && kubectl apply -f ./yaml-folder/otel-collector.yaml && kubectl apply -f ./yaml-folder/jaeger.yaml
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
