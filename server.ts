@@ -8,6 +8,9 @@ const PORT = 3000;
 
 const app = express();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Enable CORS for your Electron app's domain and port
 app.use(
 cors({
@@ -16,8 +19,15 @@ cors({
 );
 
 app.get('/', (req, res) => {
-  // Handle your Express routes here
+  res.status(200);
 });
+
+app.get('/viewlogin', (req, res) => {
+  console.log("Authenticate and Redirect");
+  const htmlPath = pathModule.join(__dirname, "cluster.html"); 
+  res.status(200).sendFile(htmlPath);
+});
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
@@ -35,7 +45,7 @@ function createWindow() {
 
   // Load local React app (http://localhost:3000)
 win.loadURL('http://localhost:3000');
-
+win.webContents.openDevTools()
 win.on('closed', () => {
     electronApp.quit();
 });
