@@ -36,8 +36,8 @@ app.listen(PORT, () => {
 // Function to create the main application window
 function createWindow() {
     const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 1000,
     webPreferences: {
       nodeIntegration: true,
     }
@@ -52,7 +52,6 @@ win.on('closed', () => {
 }
 
 electronApp.whenReady().then(createWindow);
-
 electronApp.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
     electronApp.quit();
@@ -64,3 +63,4 @@ electronApp.on('activate', () => {
     createWindow();
 }
 });
+// here is a test
