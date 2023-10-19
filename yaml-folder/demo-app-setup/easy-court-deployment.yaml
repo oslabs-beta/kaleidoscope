@@ -16,7 +16,7 @@ spec:
       - name: my-container
         image: rbrtm984/easy-court
 
-# create cluster with --config=/yaml-folder/demo-app-setup/kind-config.yaml
+# kind create cluster --config=./yaml-folder/demo-app-setup/kind-config.yaml
 # then #
 # kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.3.1/aio/deploy/recommended.yaml
 # then #
