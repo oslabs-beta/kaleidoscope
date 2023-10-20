@@ -15,8 +15,10 @@ presets:
 ## configure an exporter, such as the otlpexporter
 # config:
 exporters:
-  otlp:
-    endpoint: "http://localhost:16686"
+      jaeger: 
+        endpoint: "jaeger-deployment-collector.default.svc.cluster.local:14250"
+#   otlp:
+#     endpoint: "<SOME BACKEND>" <- endpoint of Jaeger backend
 # service:
 #   pipelines:
 #     traces:

@@ -1,0 +1,28 @@
+# kubectl apply -f ./yaml-folder/otel-daemonset.yaml && kubectl apply -f ./yaml-folder/otel-config.yaml && kubectl apply -f ./yaml-folder/otel-collector.yaml && kubectl apply -f ./yaml-folder/jaeger.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: otel-collector-daemonset
+spec:
+  selector:
+    matchLabels:
+      app: otel
+  template:
+    metadata:
+      labels:
+        app: otel
+    spec:
+      containers:
+      - name: otel-collector
+        image: otel/opentelemetry-collector:latest
+        volumeMounts:
+        - name: config-volume
+          mountPath: otel-collector.yaml
+      volumes:
+      - name: config-volume
+        # Configuring the config map for the OpenTelemetry Collector configuration
+        configMap:
+          name: otel-config
+          items:
+          - key: otel-collector.yaml
+            path: otel-collector.yaml
