@@ -1,0 +1,61 @@
+body {
+    background-image: url('../assets/k.jpeg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-color: aquamarine;
+}
+
+.title {
+    display: flex;
+    justify-content: center;
+    font: bold;
+    border-bottom: 1px solid black;
+}
+.cluster-header {
+    font: bold;
+    font-style: italic;
+    border-bottom: 20vh brown;
+}
+
+
+.home-container {
+    display: flex;
+    display: table-column;
+    background-color: rgba(175, 237, 134, 0.8);
+    padding: 80px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.canvas {
+    display: flex;
+    justify-content: center;
+}
+
+input[type="text"],
+input[type="password"] {
+    display: flex;
+    justify-content: center;
+    width: 50%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 0px;
+}
+
+button {
+    background-color: #007bff; 
+    color: #fff; 
+    padding: 10px 20px;
+    margin-top: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
