@@ -76,6 +76,7 @@ export default function NodeMap() {
         const ctx = canvas.getContext('2d');
 
         const draw = () => {
+            // console.log('draw')
             // clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -104,7 +105,7 @@ export default function NodeMap() {
 
                 // Display trace data on the circle
                 // needs to be reconfigured w/ store
-                const data = traceData.find(data => data.id === circle.id);
+                const data = traceData.find(data => data.id === circle.id); // needs to reference properties of trace data (span_id, trace_id, etc.)
                 if (data) {
                     ctx.font = '12px Arial';
                     ctx.fillStyle = 'white';
@@ -183,6 +184,7 @@ export default function NodeMap() {
         <div>
             <h1 className='title'>Cluster Name: My Demo</h1>
             <canvas className='canvas' ref={canvasRef} width={1200} height={800} />
+            { /* not currently being used but allows annotation form component to be rendered */ }
             {showAnnotation && 
             <AnnotationForm 
                 x={position.x} 
