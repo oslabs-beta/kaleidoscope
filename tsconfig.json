@@ -1,23 +1,23 @@
 {
-  "compilerOptions": {
+    "compilerOptions": {
     "module": "CommonJS",
-    "target": "ES6" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-    "jsx": "react" /* Specify what JSX code is generated. */,
-    // "module": "commonjs" /* Specify what module code is generated. */,
-    "sourceMap": true /* Create source map files for emitted JavaScript files. */,
-    "removeComments": true /* Disable emitting comments. */,
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
+      "target": "ES6" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+      "jsx": "react" /* Specify what JSX code is generated. */,
+      // "module": "commonjs" /* Specify what module code is generated. */,
+      "sourceMap": true /* Create source map files for emitted JavaScript files. */,
+      "removeComments": true /* Disable emitting comments. */,
+      "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "moduleResolution": "node",
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
-      "*": ["node_modules/*", "renderer/src/types/*"] // Modify this to match your project structure
+        "*": ["node_modules/*", "frontend/src/types/*", "backend/src/types/*"] // Modify this to match your project structure
     }
-    
-  },
-  "exclude": ["node_modules"],
-  "typeRoots": [
+
+    },
+    "exclude": ["node_modules"],
+    "typeRoots": [
     "./typings",
     "./node_modules/@types/"
-  ]
+    ]
 }
