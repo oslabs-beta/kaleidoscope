@@ -1,0 +1,6 @@
+.hoverBox {
+    position: 'absolute';
+    background-Color: 'white';
+    border: '1px solid #ccc';
+    padding: '5px';
+  }

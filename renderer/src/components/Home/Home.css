@@ -1,23 +1,9 @@
-body {
-    background-image: url('../assets/k.jpeg');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    background-color: aquamarine;
-}
-
 .title {
     display: flex;
     justify-content: center;
     font: bold;
     border-bottom: 1px solid black;
 }
-.cluster-header {
-    font: bold;
-    font-style: italic;
-    border-bottom: 20vh brown;
-}
-
 
 .home-container {
     display: flex;
@@ -32,11 +18,6 @@ body {
     transform: translate(-50%, -50%);
 }
 
-.canvas {
-    display: flex;
-    justify-content: center;
-}
-
 input[type="text"],
 input[type="password"] {
     display: flex;
@@ -45,17 +26,4 @@ input[type="password"] {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 0px;
-}
-
-button {
-    background-color: #007bff; 
-    color: #fff; 
-    padding: 10px 20px;
-    margin-top: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #0056b3;
 }

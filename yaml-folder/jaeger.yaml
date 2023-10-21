@@ -1,0 +1,17 @@
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: jaeger-deployment
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: jaeger
+#   template:
+#     metadata:
+#       labels:
+#         app: jaeger
+#     spec:
+#       containers:
+#       - name: jaeger
+#         image: jaegertracing/all-in-one:latest # from jaeger on docker hub
