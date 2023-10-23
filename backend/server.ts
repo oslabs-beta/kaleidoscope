@@ -2,7 +2,8 @@ const express = require('express');
 const pathModule = require('path');
 const cors = require('cors');
 
-const PORT = 3000;
+// backend needs to be on a different port than frontend
+const PORT = 3001;
 
 const app = express();
 
