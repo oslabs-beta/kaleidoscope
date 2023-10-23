@@ -4,11 +4,6 @@ import { Link } from 'react-router-dom';
 import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
 import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
 
-import Button from '@mui/material/Button';
-import  Typography  from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-
 import './NodeMap.css';
 
 // Circle type definition
@@ -232,11 +227,9 @@ export default function NodeMap() {
     /* ------------------------------ Rendering ------------------------------ */
 
     return (
-        <Box sx={{ p: 2, border: '1px dashed grey' }}>
+        <div style={{ border: '1px dashed grey' }}>
             {/* Title */}
-            <Typography variant="h3" component="div" align="center">
-                Node Map
-            </Typography>
+            <h3> Node Map </h3>
         
             {/* Canvas */}
             <div className="canvas-container">
@@ -263,17 +256,17 @@ export default function NodeMap() {
             {/* Conditional rendering of AnnotationMenu */}
             {showAnnotationMenu && <AnnotationMenu />}
             {/* Navigation buttons */}
-            <Container fixed style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <Link to="/">
-                    <Button>Go Back</Button>
+                    <button>Go Back</button>
                 </Link>
-                <Button id="annotationModeButton" onClick={toggleAnnotationMode}>
+                <button id="annotationModeButton" onClick={toggleAnnotationMode}>
                     {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
-                </Button>
-                <Button id="showAnnotationMenu" onClick={toggleAnnotationMenu}>
+                </button>
+                <button id="showAnnotationMenu" onClick={toggleAnnotationMenu}>
                     {showAnnotationMenu ? 'Hide Annotation Menu' : 'Show Annotation Menu'}
-                </Button>
-            </Container>
-        </Box>
+                </button>
+            </div>
+        </div>
     );
 }

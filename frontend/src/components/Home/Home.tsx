@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Button from '@mui/material/Button';
 import './Home.css';
 
 const Home = () => {
@@ -48,9 +47,9 @@ const Home = () => {
                 <label htmlFor="password">Region:</label>
                 <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
-            <Button onClick={handleAWSLogin} variant="contained">AWS Login</Button>
+            <button onClick={handleAWSLogin}>AWS Login</button>
                 <Link to="/viewlogin">
-                    <Button variant="contained">View Your Local Cluster</Button>
+                    <button>View Your Local Cluster</button>
                 </Link>
         </div>
     );
