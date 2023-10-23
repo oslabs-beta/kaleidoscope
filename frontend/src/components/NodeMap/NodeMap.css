@@ -3,3 +3,11 @@
     justify-content: center;
     position: relative;
 }
+
+.canvas-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 85vh; /* takes the full viewport height */
+}
