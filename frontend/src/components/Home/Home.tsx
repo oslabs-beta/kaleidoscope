@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import './Home.css';
 
 const Home = () => {
     const [username, setUsername] = useState('');
@@ -19,8 +18,8 @@ const Home = () => {
     };
 
     return (
-        <div className="home-container">
-            <h1 className='title'>Kaleidoscope</h1>
+        <div className="flex flex-col items-center h-screen justify-center bg-gray-100">
+            <h1 className="text-4x1 font-semibold mb-8">Kaleidoscope</h1>
             <div>
                 <label htmlFor="username">AWS Access Key ID:</label>
                 <input
