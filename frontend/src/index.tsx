@@ -9,12 +9,8 @@ import NodeMap from './components/NodeMap/NodeMap';
 import ViewCluster from './components/ViewCluster';
 import { store } from './app/store';
 import { Provider } from 'react-redux';
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
-import CssBaseline from '@mui/material/CssBaseline';
-import { ScopedCssBaseline } from '@mui/material';
+import './styles/tailwind.css';
+
 
 // Configure routes using createBrowserRouter
 // Define paths and the components to render for each path
@@ -37,9 +33,7 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById('root'));
 // Render the app within RouterProvider to enable routing
 root.render(
-  <Provider store={store}>
-    <ScopedCssBaseline>    
+  <Provider store={store}>   
       <RouterProvider router={router} />
-    </ScopedCssBaseline>
   </Provider>
 );
