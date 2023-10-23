@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
+
 import { Link } from 'react-router-dom';
 import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
+import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
+
 import Button from '@mui/material/Button';
 import  Typography  from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
+
 import './NodeMap.css';
-import '../../styles/base.css'
 
 // Circle type definition
 interface Circle {
@@ -20,9 +23,10 @@ interface Circle {
 
 // Main NodeMap component
 export default function NodeMap() {
+    /* ------------------------------ State Management ------------------------------ */
+
     // Reference to canvas DOM element
     const canvasRef = useRef<HTMLCanvasElement>(null);
-
     // State to hold circle information
     const [circles, setCircles] = useState<Circle[]>([
         // Initial circles
@@ -31,34 +35,34 @@ export default function NodeMap() {
         { id: 3, x: 300, y: 300, radius: 20, isDragging: false, isHovered: false },
         // Add more circles
     ]);
-
-    // Example data for traces
+    // Should be converted to state
     const traceData = [
         { id: 1, label: 'Endpoint 1', traceInfo: 'Information for Node 1' },
         { id: 2, label: 'Endpoint 2', traceInfo: 'Information for Node 2' },
         { id: 3, label: 'Endpoint 3', traceInfo: 'Information for Node 3' },
         // Add more trace data
     ];
-
-    // Exaple data for lines between nodes
+    // Should be converted to state
     const lines = [
         { from: 1, to: 2 },
         { from: 2, to: 3 },
-        // Define connections between nodes
     ];
-
-    // State to manage annotation form visibility and position
+    // State to handle saved annotations
+    const [annotations, setAnnotations] = useState([]);
     const [showAnnotation, setShowAnnotation] = useState(false);
+    const [showAnnotationMenu, setShowAnnotationMenu] = useState(false);
     const [position, setPosition] = useState({ x: 0, y: 0 });
-
-    // State to manage annotation mode
     const [inAnnotationMode, setInAnnotationMode] = useState(false);
+    const [selectedCircle, setSelectedCircle] = useState(null);
+    const [selectedLine, setSelectedLine] = useState(null);
 
-     // Function to toggle annotation mode
-     const toggleAnnotationMode = () => setInAnnotationMode(!inAnnotationMode);
+   /* ------------------------------ Helper Functions ------------------------------ */
 
-    // State to manage selected circle
-     const [selectedCircle, setSelectedCircle] = useState(null);
+    // Function to toggle annotation mode
+    const toggleAnnotationMode = () => setInAnnotationMode(!inAnnotationMode);
+
+    // Function to toggle annotation menu
+    const toggleAnnotationMenu = () => setShowAnnotationMenu(!showAnnotationMenu);
 
     // Function to draw circle on canvas
     const drawCircle = (canvasContext, circle) => {
@@ -75,14 +79,26 @@ export default function NodeMap() {
         canvasContext.moveTo(circleA.x, circleA.y);
         canvasContext.lineTo(circleB.x, circleB.y);
         canvasContext.strokeStyle = 'dark-gray';
-        canvasContext.lineWidth = 2;
+        canvasContext.lineWidth = 5;
         canvasContext.stroke();
     };
+
+    /* ------------------------------ The World's Biggest useEffect------------------------------ */
 
     // useEffect to handle canvas rendering and interactions
     useEffect(() => {
         const canvas = canvasRef.current;
         const canvasContext = canvas.getContext('2d');
+
+        const updateCanvasSize = () => {
+            if (canvasRef.current) {
+              canvasRef.current.width = window.innerWidth * 0.8; // 80% of window width
+              canvasRef.current.height = window.innerHeight * 0.8; // 80% of window height
+            }
+          };
+
+        // Initial update
+        updateCanvasSize();
 
         const draw = () => {
             // clear canvas
@@ -131,15 +147,28 @@ export default function NodeMap() {
                 const rect = canvas.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-                setPosition({ x, y });
-                setShowAnnotation(true);
-                circles.forEach(circle => {
-                    const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
-                    if (distance <= circle.radius) {
-                        console.log('selected circle', circle.id)
-                        setSelectedCircle(circle);
-                    }
-                });
+                if (!selectedCircle) {
+                    setPosition({ x, y });
+                    setShowAnnotation(true);
+                    circles.forEach(circle => {
+                        const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
+                        if (distance <= circle.radius) {
+                            console.log('selected circle', circle.id)
+                            setSelectedCircle(circle);
+                        }
+                    });
+                    lines.forEach(line => {
+                        const fromCircle = circles.find(circle => circle.id === line.from);
+                        const toCircle = circles.find(circle => circle.id === line.to);
+                        const slope = (toCircle.y - fromCircle.y) / (toCircle.x - fromCircle.x);
+                        const yIntercept = fromCircle.y - slope * fromCircle.x;
+                        const distance = Math.abs(slope * mouseX - mouseY + yIntercept) / Math.sqrt(slope ** 2 + 1);
+                        if (distance <= 5) {
+                            console.log('selected line', line)
+                            setSelectedLine(line);
+                        }
+                    });
+                }
             } else {
                 circles.forEach(circle => {
                     const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
@@ -179,6 +208,9 @@ export default function NodeMap() {
         canvas.addEventListener('mouseup', handleMouseUp);
         canvas.addEventListener('mousemove', handleMouseMove);
 
+        // Update canvas size when window resizes
+        window.addEventListener('resize', updateCanvasSize);
+
         // Add mouseout event listener to clear hover state
         canvas.addEventListener('mouseout', () => {
             circles.forEach(circle => {
@@ -193,32 +225,43 @@ export default function NodeMap() {
             canvas.removeEventListener('mousedown', handleMouseDown);
             canvas.removeEventListener('mouseup', handleMouseUp);
             canvas.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('resize', updateCanvasSize);
         };
     }, [circles, traceData, lines]);
 
+    /* ------------------------------ Rendering ------------------------------ */
+
     return (
-        <Box>
+        <Box sx={{ p: 2, border: '1px dashed grey' }}>
             {/* Title */}
             <Typography variant="h3" component="div" align="center">
                 Node Map
             </Typography>
+        
             {/* Canvas */}
-            <canvas className='canvas' ref={canvasRef} width={1200} height={600} />
+            <div className="canvas-container">
+                <canvas className='canvas' ref={canvasRef} style={{ border: '1px dashed grey' }} />
+            </div>
             {/* Conditional rendering of AnnotationForm */}
-            {showAnnotation && selectedCircle && 
+            {showAnnotation && (selectedCircle || selectedLine) && 
                 <AnnotationForm
                     x={position.x}
                     y={position.y}
                     onSave={(annotationText) => {
                         console.log('Annotation saved: ', annotationText);
                         setShowAnnotation(false);
+                        setSelectedLine(null);
+                        setSelectedCircle(null);
                     }}
                     onCancel={() => {
                         setShowAnnotation(false);
+                        setSelectedLine(null);
                         setSelectedCircle(null);
                     }}
                 />
             }
+            {/* Conditional rendering of AnnotationMenu */}
+            {showAnnotationMenu && <AnnotationMenu />}
             {/* Navigation buttons */}
             <Container fixed style={{ display: 'flex', justifyContent: 'center' }}>
                 <Link to="/">
@@ -226,6 +269,9 @@ export default function NodeMap() {
                 </Link>
                 <Button id="annotationModeButton" onClick={toggleAnnotationMode}>
                     {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
+                </Button>
+                <Button id="showAnnotationMenu" onClick={toggleAnnotationMenu}>
+                    {showAnnotationMenu ? 'Hide Annotation Menu' : 'Show Annotation Menu'}
                 </Button>
             </Container>
         </Box>
