@@ -15,6 +15,10 @@
   "dependencies": {
     "@babel/core": "^7.23.2",
     "@babel/preset-env": "^7.23.2",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@fontsource/roboto": "^5.0.8",
+    "@mui/material": "^5.14.14",
     "@reduxjs/toolkit": "^1.9.7",
     "@types/pg": "^8.10.7",
     "@types/react": "^18.2.31",

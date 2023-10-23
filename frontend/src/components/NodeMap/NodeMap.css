@@ -1,27 +1,5 @@
 .canvas {
     display: flex;
     justify-content: center;
-}
-
-button {
-    background-color: #007bff; 
-    color: #fff; 
-    padding: 10px 20px;
-    margin-top: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #0056b3;
-}
-
-#annotationModeButton {
-    background-color: #007bff; 
-    color: #fff; 
-    padding: 10px 20px;
-    margin-top: 10px;
-    margin-bottom: 50px;
-    border-radius: 5px;
-    cursor: pointer;
+    position: relative;
 }

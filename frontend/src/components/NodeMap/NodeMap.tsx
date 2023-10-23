@@ -1,9 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
+import Button from '@mui/material/Button';
+import  Typography  from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 import './NodeMap.css';
 import '../../styles/base.css'
 
+// Circle type definition
 interface Circle {
     id: number;
     x: number;
@@ -13,20 +18,21 @@ interface Circle {
     isHovered: boolean; // Add isHovered property
 }
 
+// Main NodeMap component
 export default function NodeMap() {
     // Reference to canvas DOM element
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    // State to manage the circles (nodes) on the canvas
+    // State to hold circle information
     const [circles, setCircles] = useState<Circle[]>([
-        // Change Id values to be represent incoming data values
+        // Initial circles
         { id: 1, x: 100, y: 100, radius: 20, isDragging: false, isHovered: false },
         { id: 2, x: 200, y: 200, radius: 20, isDragging: false, isHovered: false },
         { id: 3, x: 300, y: 300, radius: 20, isDragging: false, isHovered: false },
-        // Add more circles with IDs and initial positions
+        // Add more circles
     ]);
 
-    // Define your trace data (replace this with your actual data)
+    // Example data for traces
     const traceData = [
         { id: 1, label: 'Endpoint 1', traceInfo: 'Information for Node 1' },
         { id: 2, label: 'Endpoint 2', traceInfo: 'Information for Node 2' },
@@ -34,11 +40,10 @@ export default function NodeMap() {
         // Add more trace data
     ];
 
-    // Define line data
+    // Exaple data for lines between nodes
     const lines = [
         { from: 1, to: 2 },
         { from: 2, to: 3 },
-        // { from: 3, to: 1 },
         // Define connections between nodes
     ];
 
@@ -49,36 +54,36 @@ export default function NodeMap() {
     // State to manage annotation mode
     const [inAnnotationMode, setInAnnotationMode] = useState(false);
 
-     // Toggle annotation mode on/off
+     // Function to toggle annotation mode
      const toggleAnnotationMode = () => setInAnnotationMode(!inAnnotationMode);
 
-    // Draws a circle on the canvas
-    const drawCircle = (ctx, circle) => {
-        ctx.beginPath();
-        ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'black';
-        ctx.fill();
-        ctx.closePath();
+    // Function to draw circle on canvas
+    const drawCircle = (canvasContext, circle) => {
+        canvasContext.beginPath();
+        canvasContext.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+        canvasContext.fillStyle = 'black';
+        canvasContext.fill();
+        canvasContext.closePath();
     };
 
-    // Draws a line between two circles on the canvas
-    const drawLine = (ctx, circleA, circleB) => {
-        ctx.beginPath();
-        ctx.moveTo(circleA.x, circleA.y);
-        ctx.lineTo(circleB.x, circleB.y);
-        ctx.strokeStyle = 'dark-gray';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+    // Function to draw line between circles
+    const drawLine = (canvasContext, circleA, circleB) => {
+        canvasContext.beginPath();
+        canvasContext.moveTo(circleA.x, circleA.y);
+        canvasContext.lineTo(circleB.x, circleB.y);
+        canvasContext.strokeStyle = 'dark-gray';
+        canvasContext.lineWidth = 2;
+        canvasContext.stroke();
     };
 
+    // useEffect to handle canvas rendering and interactions
     useEffect(() => {
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
+        const canvasContext = canvas.getContext('2d');
 
         const draw = () => {
-            // console.log('draw')
             // clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvasContext.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw lines with labels
             lines.forEach(line => {
@@ -86,30 +91,30 @@ export default function NodeMap() {
                 const toCircle = circles.find(circle => circle.id === line.to);
 
                 // Draw line
-                drawLine(ctx, fromCircle, toCircle);
+                drawLine(canvasContext, fromCircle, toCircle);
 
                 // Calculate the midpoint of the line for label positioning
                 const labelX = (fromCircle.x + toCircle.x) / 2;
                 const labelY = (fromCircle.y + toCircle.y) / 2;
 
                 // Display label
-                ctx.font = '12px Arial';
-                ctx.fillStyle = 'red';
-                ctx.fillText('Trace Data', labelX, labelY);
+                canvasContext.font = '12px Arial';
+                canvasContext.fillStyle = 'red';
+                canvasContext.fillText('Trace Data', labelX, labelY);
             });
 
             // Draw circles and node labels
             circles.forEach(circle => {
                 // call helper func
-                drawCircle(ctx, circle);
+                drawCircle(canvasContext, circle);
 
                 // Display trace data on the circle
                 // needs to be reconfigured w/ store
                 const data = traceData.find(data => data.id === circle.id); // needs to reference properties of trace data (span_id, trace_id, etc.)
                 if (data) {
-                    ctx.font = '12px Arial';
-                    ctx.fillStyle = 'white';
-                    ctx.fillText(data.label, circle.x - 15, circle.y);
+                    canvasContext.font = '12px Arial';
+                    canvasContext.fillStyle = 'white';
+                    canvasContext.fillText(data.label, circle.x - 15, circle.y);
                 }
             });
         };
@@ -181,24 +186,34 @@ export default function NodeMap() {
     }, [circles, traceData, lines]);
 
     return (
-        <div>
-            <h1 className='title'>Cluster Name: My Demo</h1>
-            <canvas className='canvas' ref={canvasRef} width={1200} height={800} />
-            { /* not currently being used but allows annotation form component to be rendered */ }
+        <Box>
+            {/* Title */}
+            <Typography variant="h3" component="div" align="center">
+                Node Map
+            </Typography>
+            {/* Canvas */}
+            <canvas className='canvas' ref={canvasRef} width={1200} height={600} />
+            {/* Conditional rendering of AnnotationForm */}
             {showAnnotation && 
-            <AnnotationForm 
-                x={position.x} 
-                y={position.y} 
-                onSave={(text) => { /* Handle saving annotation */ }}
-                onCancel={() => setShowAnnotation(false)} 
-            />
+                <AnnotationForm
+                    x={position.x}
+                    y={position.y}
+                    onSave={(annotationText) => {
+                        console.log('Annotation saved: ', annotationText);
+                        setShowAnnotation(false);
+                    }}
+                    onCancel={() => setShowAnnotation(false)}
+                />
             }
-            <Link to="/">
-                <button>Go Back</button>
-            </Link>
-            <button id="annotationModeButton" onClick={toggleAnnotationMode}>
-                {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
-            </button>
-        </div>
+            {/* Navigation buttons */}
+            <Container fixed style={{ display: 'flex', justifyContent: 'center' }}>
+                <Link to="/">
+                    <Button>Go Back</Button>
+                </Link>
+                <Button id="annotationModeButton" onClick={toggleAnnotationMode}>
+                    {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
+                </Button>
+            </Container>
+        </Box>
     );
 }
