@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { CSSProperties } from 'react';
 
 export const AnnotationForm = ({ x, y, onSave, onCancel }) => {
   const [annotationText, setAnnotationText] = useState('');
@@ -14,33 +15,30 @@ export const AnnotationForm = ({ x, y, onSave, onCancel }) => {
   
   // Style for the form. Position it absolutely and set the x/y coordinates based on the props
   // passed down from the users' click event.
-  const formStyle = {
-    // position: 'absolute',
+  const formStyle: CSSProperties = {
+    position: 'absolute',
     top: `${y}px`,
     left: `${x}px`,
     zIndex: 100,
-    width: 300,
-    height: 300,
-    backgroundColor: 'white',
-    padding: '1rem',
   };
 
   return (
-    <div style={{ ...formStyle }}>
+    <div className="absolute z-10 w-72 h-72 bg-white p-4" style={{...formStyle}}>
       <div>
-        <h5>
+        <h5 className ="text-lg font-semibold">
           Add Annotation
         </h5>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
+        <form onSubmit={handleSubmit} className="flex flex-col">
           <textarea
+            className="border rounded p-2"
             id="outlined-multiline-static"
             rows={4}
             value={annotationText}
             onChange={(e) => setAnnotationText(e.target.value)}
           />
-          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: '1rem' }}>
-            <button type="submit">Save</button>
-            <button onClick={onCancel}>Cancel</button>
+          <div className="flex justify-between mt-4">
+            <button type="submit" className="bg-blue-500 text-white rounded p-2">Save</button>
+            <button onClick={onCancel} className="bg-blue-500 text-white rounded p-2">Cancel</button>
           </div>
         </form>
       </div>
