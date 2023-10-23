@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
 import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
 
-import './NodeMap.css';
-
 // Circle type definition
 interface Circle {
     id: number;
@@ -54,7 +52,10 @@ export default function NodeMap() {
    /* ------------------------------ Helper Functions ------------------------------ */
 
     // Function to toggle annotation mode
-    const toggleAnnotationMode = () => setInAnnotationMode(!inAnnotationMode);
+    const toggleAnnotationMode = () => {
+        console.log('toggle annotation mode');
+        setInAnnotationMode(!inAnnotationMode);
+    };
 
     // Function to toggle annotation menu
     const toggleAnnotationMenu = () => setShowAnnotationMenu(!showAnnotationMenu);
@@ -78,60 +79,51 @@ export default function NodeMap() {
         canvasContext.stroke();
     };
 
-    /* ------------------------------ The World's Biggest useEffect------------------------------ */
+    // Function to draw canvas
+    const draw = (canvasContext, canvas) => {
+        // clear canvas
+        canvasContext.clearRect(0, 0, canvas.width, canvas.height);
 
-    // useEffect to handle canvas rendering and interactions
+        // Draw lines with labels
+        lines.forEach(line => {
+            const fromCircle = circles.find(circle => circle.id === line.from);
+            const toCircle = circles.find(circle => circle.id === line.to);
+
+            // Draw line
+            drawLine(canvasContext, fromCircle, toCircle);
+
+            // Calculate the midpoint of the line for label positioning
+            const labelX = (fromCircle.x + toCircle.x) / 2;
+            const labelY = (fromCircle.y + toCircle.y) / 2;
+
+            // Display label
+            canvasContext.font = '12px Arial';
+            canvasContext.fillStyle = 'red';
+            canvasContext.fillText('Trace Data', labelX, labelY);
+        });
+
+        // Draw circles and node labels
+        circles.forEach(circle => {
+            // call helper func
+            drawCircle(canvasContext, circle);
+
+            // Display trace data on the circle
+            // needs to be reconfigured w/ store
+            const data = traceData.find(data => data.id === circle.id); // needs to reference properties of trace data (span_id, trace_id, etc.)
+            if (data) {
+                canvasContext.font = '12px Arial';
+                canvasContext.fillStyle = 'white';
+                canvasContext.fillText(data.label, circle.x - 15, circle.y);
+            }
+        });
+    };
+
+    /* ------------------------------ The useEffect Zone------------------------------ */
+
+    // useEffect for event listeners
     useEffect(() => {
         const canvas = canvasRef.current;
         const canvasContext = canvas.getContext('2d');
-
-        const updateCanvasSize = () => {
-            if (canvasRef.current) {
-              canvasRef.current.width = window.innerWidth * 0.8; // 80% of window width
-              canvasRef.current.height = window.innerHeight * 0.8; // 80% of window height
-            }
-          };
-
-        // Initial update
-        updateCanvasSize();
-
-        const draw = () => {
-            // clear canvas
-            canvasContext.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw lines with labels
-            lines.forEach(line => {
-                const fromCircle = circles.find(circle => circle.id === line.from);
-                const toCircle = circles.find(circle => circle.id === line.to);
-
-                // Draw line
-                drawLine(canvasContext, fromCircle, toCircle);
-
-                // Calculate the midpoint of the line for label positioning
-                const labelX = (fromCircle.x + toCircle.x) / 2;
-                const labelY = (fromCircle.y + toCircle.y) / 2;
-
-                // Display label
-                canvasContext.font = '12px Arial';
-                canvasContext.fillStyle = 'red';
-                canvasContext.fillText('Trace Data', labelX, labelY);
-            });
-
-            // Draw circles and node labels
-            circles.forEach(circle => {
-                // call helper func
-                drawCircle(canvasContext, circle);
-
-                // Display trace data on the circle
-                // needs to be reconfigured w/ store
-                const data = traceData.find(data => data.id === circle.id); // needs to reference properties of trace data (span_id, trace_id, etc.)
-                if (data) {
-                    canvasContext.font = '12px Arial';
-                    canvasContext.fillStyle = 'white';
-                    canvasContext.fillText(data.label, circle.x - 15, circle.y);
-                }
-            });
-        };
 
         // Handles mousedown event on the canvas
         const handleMouseDown = (e: MouseEvent) => {
@@ -195,7 +187,7 @@ export default function NodeMap() {
                 }
             });
 
-            draw();
+            draw(canvasContext, canvas);
         };
 
         // Attach event listeners
@@ -203,23 +195,40 @@ export default function NodeMap() {
         canvas.addEventListener('mouseup', handleMouseUp);
         canvas.addEventListener('mousemove', handleMouseMove);
 
-        // Update canvas size when window resizes
-        window.addEventListener('resize', updateCanvasSize);
-
         // Add mouseout event listener to clear hover state
         canvas.addEventListener('mouseout', () => {
             circles.forEach(circle => {
                 circle.isHovered = false;
             });
-            draw();
+            draw(canvasContext, canvas);
         });
-
-        draw();
-
+    
+        draw(canvasContext, canvas);
+    
         return () => {
             canvas.removeEventListener('mousedown', handleMouseDown);
             canvas.removeEventListener('mouseup', handleMouseUp);
             canvas.removeEventListener('mousemove', handleMouseMove);
+
+        };
+    }, [inAnnotationMode]);
+
+    //resizing useEffect
+    useEffect(() => {
+        const updateCanvasSize = () => {
+            if (canvasRef.current) {
+                const canvas = canvasRef.current;
+                const canvasContext = canvas.getContext('2d');
+                canvas.width = window.innerWidth * 0.8; // 80% of window width
+                canvas.height = window.innerHeight * 0.6; // 60% of window height
+                draw(canvasContext, canvas);
+            }
+        };
+        
+        window.addEventListener('resize', updateCanvasSize);
+        updateCanvasSize(); // Call it once to set initial size
+        
+        return () => {
             window.removeEventListener('resize', updateCanvasSize);
         };
     }, [circles, traceData, lines]);
@@ -227,13 +236,17 @@ export default function NodeMap() {
     /* ------------------------------ Rendering ------------------------------ */
 
     return (
-        <div style={{ border: '1px dashed grey' }}>
+        
+        <div className="flex flex-col items-center justify-center h-screen">
+            <div>
+                In Annotation Mode: {inAnnotationMode.toString()}
+            </div>
             {/* Title */}
-            <h3> Node Map </h3>
+            <h3 className="text-4xl text-center mb-4"> Node Map </h3>
         
             {/* Canvas */}
-            <div className="canvas-container">
-                <canvas className='canvas' ref={canvasRef} style={{ border: '1px dashed grey' }} />
+            <div className="canvas-container w-4/5 h-3/5 relative">
+                <canvas className="absolute inset-0 border-dashed border-2 border-gray-600 w-full h-full" ref={canvasRef} />
             </div>
             {/* Conditional rendering of AnnotationForm */}
             {showAnnotation && (selectedCircle || selectedLine) && 
@@ -256,14 +269,14 @@ export default function NodeMap() {
             {/* Conditional rendering of AnnotationMenu */}
             {showAnnotationMenu && <AnnotationMenu />}
             {/* Navigation buttons */}
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Link to="/">
-                    <button>Go Back</button>
+            <div className="flex justify-center mt-4">
+                <Link to="/" className="mr-2">
+                    <button className="bg-blue-500 text-white p-2 rounded">Go Back</button>
                 </Link>
-                <button id="annotationModeButton" onClick={toggleAnnotationMode}>
+                <button onClick={toggleAnnotationMode} className="bg-blue-500 text-white p-2 rounded mr-2">
                     {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
                 </button>
-                <button id="showAnnotationMenu" onClick={toggleAnnotationMenu}>
+                <button onClick={toggleAnnotationMenu} className="bg-blue-500 text-white p-2 rounded">
                     {showAnnotationMenu ? 'Hide Annotation Menu' : 'Show Annotation Menu'}
                 </button>
             </div>
