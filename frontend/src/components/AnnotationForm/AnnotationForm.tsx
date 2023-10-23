@@ -43,7 +43,6 @@ export const AnnotationForm = ({ x, y, onSave, onCancel }) => {
             label="Annotation"
             multiline
             rows={4}
-            defaultValue="Default Value"
             value={annotationText}
             onChange={(e) => setAnnotationText(e.target.value)}
           />

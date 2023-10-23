@@ -48,14 +48,17 @@ export default function NodeMap() {
     ];
 
     // State to manage annotation form visibility and position
-    const [showAnnotation, setShowAnnotation] = React.useState(false);
-    const [position, setPosition] = React.useState({ x: 0, y: 0 });
+    const [showAnnotation, setShowAnnotation] = useState(false);
+    const [position, setPosition] = useState({ x: 0, y: 0 });
 
     // State to manage annotation mode
     const [inAnnotationMode, setInAnnotationMode] = useState(false);
 
      // Function to toggle annotation mode
      const toggleAnnotationMode = () => setInAnnotationMode(!inAnnotationMode);
+
+    // State to manage selected circle
+     const [selectedCircle, setSelectedCircle] = useState(null);
 
     // Function to draw circle on canvas
     const drawCircle = (canvasContext, circle) => {
@@ -130,10 +133,18 @@ export default function NodeMap() {
                 const y = e.clientY - rect.top;
                 setPosition({ x, y });
                 setShowAnnotation(true);
+                circles.forEach(circle => {
+                    const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
+                    if (distance <= circle.radius) {
+                        console.log('selected circle', circle.id)
+                        setSelectedCircle(circle);
+                    }
+                });
             } else {
                 circles.forEach(circle => {
                     const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
                     if (distance <= circle.radius) {
+                        console.log('selected circle', circle.id)
                         circle.isDragging = true;
                     }
                 });
@@ -194,7 +205,7 @@ export default function NodeMap() {
             {/* Canvas */}
             <canvas className='canvas' ref={canvasRef} width={1200} height={600} />
             {/* Conditional rendering of AnnotationForm */}
-            {showAnnotation && 
+            {showAnnotation && selectedCircle && 
                 <AnnotationForm
                     x={position.x}
                     y={position.y}
@@ -202,7 +213,10 @@ export default function NodeMap() {
                         console.log('Annotation saved: ', annotationText);
                         setShowAnnotation(false);
                     }}
-                    onCancel={() => setShowAnnotation(false)}
+                    onCancel={() => {
+                        setShowAnnotation(false);
+                        setSelectedCircle(null);
+                    }}
                 />
             }
             {/* Navigation buttons */}
