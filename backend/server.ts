@@ -1,6 +1,7 @@
 const express = require('express');
 const pathModule = require('path');
 const cors = require('cors');
+const nodemapRouter = require('./routers/nodemapRouter.ts')
 
 // backend needs to be on a different port than frontend
 const PORT = 3001;
@@ -13,16 +14,17 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-    res.status(200);
-});
+app.use('/nodemap', nodemapRouter);
 
 app.get('/viewlogin', (req, res) => {
-    console.log("Authenticate and Redirect");
-    const htmlPath = pathModule.join(__dirname, "cluster.html"); 
-    res.status(200).sendFile(htmlPath);
+    console.log('hit view login!')
+    res.status(202);
 });
 
+app.get('/', (req, res) => {
+    console.log('you hit home')
+    res.status(201);
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

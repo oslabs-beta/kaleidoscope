@@ -6,13 +6,112 @@ import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
 
 // Circle type definition
 interface Circle {
-    id: number;
+    name: string;
+    id: string;
     x: number;
     y: number;
     radius: number;
     isDragging: boolean;
     isHovered: boolean; // Add isHovered property
+    data: Span[]; //to store data in each node, might not be efficient
 }
+
+interface Line {
+    from: string;
+    to: string;
+    latency: number;
+    requests: number;
+}
+
+interface Span { 
+    name: string;
+    context: {
+        trace_id: string;
+        span_id: string;
+    }
+    parent_id: string;
+    start_time: Date;
+    end_time: Date;
+    attributes: {
+        'http.route': string;
+    }
+    events: {
+        name: string;
+        timestamp: Date;
+        attributes: {
+            event_attributes: Number;
+        }
+    }[]
+}
+
+const makeNodes = async () => {
+    // console.log('invoked awaitFunc');
+    // Get spans (trace data) and parse it into circles and lines
+    try {
+        const data: any = await fetch('http://localhost:3001/nodemap')
+        // console.log('FETCHED NODES', data);
+        const spans:{spans:Span[]} = await data.json();  
+        console.log('SPAN DATA', spans);
+        // console.log('iterable i hope....', spans.spans)
+
+        const defaultNodeRadius = 20;
+
+        const endpoints = {};
+        const nodes:Circle[] = [];
+        const lines:Line[] = [];
+        let counter = 0
+        spans.spans.forEach(span => {
+            // console.log('in the for each!!!!!!!', span.attributes)
+            //check if we need to create a new node/circle; create if so
+            if(!endpoints[span.attributes['http.route']]){ //if endpoint is not yet in our nodes
+                // console.log('inside conditional logic')
+                counter++;
+                nodes.push({
+                    name: span.attributes['http.route'],
+                    id: span.context.span_id,
+                    x: counter * 20, 
+                    y: counter * 20,
+                    radius: defaultNodeRadius,
+                    isDragging: false,
+                    isHovered: false, 
+                    data: [span]
+                })
+                // console.log('pushed node')
+                endpoints[span.attributes['http.route']] = nodes[nodes.length - 1]; //keep references to nodes at each unique endpoint
+            }else{
+                //pass span data to an existing node
+                endpoints[span.attributes['http.route']].data.push(span);
+            }
+            // console.log('made node, makin line...')
+            //check if we need to create a new line (if node has parent_id); create if so
+            if(span.parent_id !== null){
+                const parent:Circle|undefined = nodes.find((s) => s.id === span.parent_id);
+                if(parent){ 
+                    const time1:Date | any = new Date(span.end_time)
+                    const time2:Date | any = new Date(span.start_time)
+                    //check for an exisiting line / incorporate latency
+                    const line:Line|undefined = lines.find((l) => l.from === parent.name && l.to === span.attributes['http.route']);
+                    if(line) {
+                        line.requests++;
+                        const weight:number = 1 / line.requests;
+                        line.latency = ((line.latency * weight) + (time1 - time2) * (1 - weight)); //calculate avg latency
+                    }else{
+                        lines.push({  //create a new line
+                            from: parent.name,
+                            to: span.attributes['http.route'],
+                            latency: (time1 - time2),
+                            requests: 1
+                        })
+                    }
+                }
+            }
+        })
+        return [nodes, lines];
+    }catch(err) {
+        console.log('error fetching', err)
+    }
+}
+
 
 // Main NodeMap component
 export default function NodeMap() {
@@ -20,26 +119,14 @@ export default function NodeMap() {
 
     // Reference to canvas DOM element
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    // State to hold circle information
-    const [circles, setCircles] = useState<Circle[]>([
-        // Initial circles
-        { id: 1, x: 100, y: 100, radius: 20, isDragging: false, isHovered: false },
-        { id: 2, x: 200, y: 200, radius: 20, isDragging: false, isHovered: false },
-        { id: 3, x: 300, y: 300, radius: 20, isDragging: false, isHovered: false },
-        // Add more circles
+
+    // State to manage the circles (nodes) on the canvas
+    let [circles, setCircles] = useState<Circle[]>([
+        // Add more circles with IDs and initial positions
     ]);
-    // Should be converted to state
-    const traceData = [
-        { id: 1, label: 'Endpoint 1', traceInfo: 'Information for Node 1' },
-        { id: 2, label: 'Endpoint 2', traceInfo: 'Information for Node 2' },
-        { id: 3, label: 'Endpoint 3', traceInfo: 'Information for Node 3' },
-        // Add more trace data
-    ];
-    // Should be converted to state
-    const lines = [
-        { from: 1, to: 2 },
-        { from: 2, to: 3 },
-    ];
+
+    let lines = [];
+
     // State to handle saved annotations
     const [annotations, setAnnotations] = useState([]);
     const [showAnnotation, setShowAnnotation] = useState(false);
@@ -51,11 +138,8 @@ export default function NodeMap() {
 
    /* ------------------------------ Helper Functions ------------------------------ */
 
-    // Function to toggle annotation mode
-    const toggleAnnotationMode = () => {
-        console.log('toggle annotation mode');
-        setInAnnotationMode(!inAnnotationMode);
-    };
+     // Toggle annotation mode on/off
+    const toggleAnnotationMode = () => setInAnnotationMode(!inAnnotationMode);
 
     // Function to toggle annotation menu
     const toggleAnnotationMenu = () => setShowAnnotationMenu(!showAnnotationMenu);
@@ -75,55 +159,72 @@ export default function NodeMap() {
         canvasContext.moveTo(circleA.x, circleA.y);
         canvasContext.lineTo(circleB.x, circleB.y);
         canvasContext.strokeStyle = 'dark-gray';
-        canvasContext.lineWidth = 5;
+        canvasContext.lineWidth = 2;
         canvasContext.stroke();
     };
 
-    // Function to draw canvas
-    const draw = (canvasContext, canvas) => {
+    const draw = (canvasContext, canvas, circles:Circle[], lines:Line[]):void | null => {
+        // console.log('draw')
         // clear canvas
         canvasContext.clearRect(0, 0, canvas.width, canvas.height);
 
         // Draw lines with labels
         lines.forEach(line => {
-            const fromCircle = circles.find(circle => circle.id === line.from);
-            const toCircle = circles.find(circle => circle.id === line.to);
-
+            // console.log('Check here', circles.find(circle => circle.name === line.from)) 
+            console.log('testing', circles.find(circle => circle.name === line.from))
+            const fromCircle: Circle = circles.find(circle => circle.name === line.from);
+            const toCircle: Circle = circles.find(circle => circle.name === line.to);
+            console.log('from', fromCircle, '  to', toCircle);
             // Draw line
             drawLine(canvasContext, fromCircle, toCircle);
 
-            // Calculate the midpoint of the line for label positioning
-            const labelX = (fromCircle.x + toCircle.x) / 2;
-            const labelY = (fromCircle.y + toCircle.y) / 2;
+        // Calculate the midpoint of the line for label positioning
+        const labelX = (fromCircle.x + toCircle.x) / 2;
+        const labelY = (fromCircle.y + toCircle.y) / 2;
 
             // Display label
             canvasContext.font = '12px Arial';
             canvasContext.fillStyle = 'red';
-            canvasContext.fillText('Trace Data', labelX, labelY);
+            canvasContext.fillText(`average latency: ${line.latency}ms requests:${line.requests}`, labelX, labelY);
         });
 
         // Draw circles and node labels
         circles.forEach(circle => {
             // call helper func
             drawCircle(canvasContext, circle);
-
             // Display trace data on the circle
             // needs to be reconfigured w/ store
-            const data = traceData.find(data => data.id === circle.id); // needs to reference properties of trace data (span_id, trace_id, etc.)
-            if (data) {
-                canvasContext.font = '12px Arial';
-                canvasContext.fillStyle = 'white';
-                canvasContext.fillText(data.label, circle.x - 15, circle.y);
-            }
+            canvasContext.font = '12px Arial';
+            canvasContext.fillStyle = 'white';
+            canvasContext.fillText(circle.name, circle.x - 15, circle.y);
         });
     };
 
-    /* ------------------------------ The useEffect Zone------------------------------ */
+        /* ------------------------------ The useEffect Zone------------------------------ */
 
-    // useEffect for event listeners
+    // Makes map w/ new nodes and lines
+    useEffect(() => {
+        const getNewNodeMap = async () => {
+            const [newCircles, newLines]:any = await makeNodes(); 
+            console.log('got EM', newCircles) 
+            lines = newLines; 
+            circles = newCircles
+        }
+        getNewNodeMap();
+    }, [])
+    
     useEffect(() => {
         const canvas = canvasRef.current;
         const canvasContext = canvas.getContext('2d');
+        if(!canvas){
+            console.log('canvas is undefined')
+            return; 
+        } 
+        const ctx = canvas.getContext('2d');
+        if(!ctx){
+            console.log('ctx is undefined')
+            return; 
+        }
 
         // Handles mousedown event on the canvas
         const handleMouseDown = (e: MouseEvent) => {
@@ -156,6 +257,13 @@ export default function NodeMap() {
                         }
                     });
                 }
+                circles.forEach(circle => {
+                    const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
+                    if (distance <= circle.radius) {
+                        console.log('selected circle', circle.id)
+                        setSelectedCircle(circle);
+                    }
+                });
             } else {
                 circles.forEach(circle => {
                     const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
@@ -187,7 +295,7 @@ export default function NodeMap() {
                 }
             });
 
-            draw(canvasContext, canvas);
+            draw(canvasContext, canvas, circles, lines);
         };
 
         // Attach event listeners
@@ -200,11 +308,11 @@ export default function NodeMap() {
             circles.forEach(circle => {
                 circle.isHovered = false;
             });
-            draw(canvasContext, canvas);
+            draw(canvasContext, canvas, circles, lines);
         });
-    
-        draw(canvasContext, canvas);
-    
+
+        draw(canvasContext, canvas, circles, lines);
+
         return () => {
             canvas.removeEventListener('mousedown', handleMouseDown);
             canvas.removeEventListener('mouseup', handleMouseUp);
@@ -221,7 +329,7 @@ export default function NodeMap() {
                 const canvasContext = canvas.getContext('2d');
                 canvas.width = window.innerWidth * 0.8; // 80% of window width
                 canvas.height = window.innerHeight * 0.6; // 60% of window height
-                draw(canvasContext, canvas);
+                draw(canvasContext, canvas, circles, lines);
             }
         };
         
@@ -231,12 +339,9 @@ export default function NodeMap() {
         return () => {
             window.removeEventListener('resize', updateCanvasSize);
         };
-    }, [circles, traceData, lines]);
-
-    /* ------------------------------ Rendering ------------------------------ */
+    }, []);
 
     return (
-        
         <div className="flex flex-col items-center justify-center h-screen">
             <div>
                 In Annotation Mode: {inAnnotationMode.toString()}
