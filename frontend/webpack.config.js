@@ -42,7 +42,21 @@ module.exports = (env, argv) => {
     },
     {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
+        use: [
+            'style-loader', 
+            'css-loader',
+            {
+                loader: 'postcss-loader',
+                options: {
+                    postcssOptions: {
+                        plugins: [
+                            require('tailwindcss'),
+                            require('autoprefixer'),
+                        ],
+                    },
+                },
+            },
+    ],
     },
     ],
     },
@@ -55,6 +69,7 @@ module.exports = (env, argv) => {
         template: './public/index.html',
         filename: './index.html',
         }),
+        
     ],
     devtool: 'source-map',
     devServer: {
@@ -62,8 +77,9 @@ module.exports = (env, argv) => {
         directory: path.join(__dirname, './dist'),
         publicPath: '/',
         },
+        // proxy needs to be on a different port than the backend so that all parts of the app can run simultaneously
         proxy: {
-        '/api': 'http://localhost:3000',
+        '/api': 'http://localhost:3002',
         secure: false,
         },
         compress: false,

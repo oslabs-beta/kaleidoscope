@@ -2,12 +2,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
+import { CSSProperties } from 'react';
 
 export const AnnotationForm = ({ x, y, onSave, onCancel }) => {
   const [annotationText, setAnnotationText] = useState('');
@@ -20,38 +15,33 @@ export const AnnotationForm = ({ x, y, onSave, onCancel }) => {
   
   // Style for the form. Position it absolutely and set the x/y coordinates based on the props
   // passed down from the users' click event.
-  const formStyle = {
+  const formStyle: CSSProperties = {
     position: 'absolute',
     top: `${y}px`,
     left: `${x}px`,
     zIndex: 100,
-    width: 300,
-    height: 300,
-    backgroundColor: 'white',
-    padding: '1rem',
   };
 
   return (
-    <Card variant="outlined" sx={{ ...formStyle }}>
-      <CardContent>
-        <Typography variant="h5" component="div">
+    <div className="absolute z-10 w-72 h-72 bg-white p-4" style={{...formStyle}}>
+      <div>
+        <h5 className ="text-lg font-semibold">
           Add Annotation
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column' }}>
-          <TextField
+        </h5>
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <textarea
+            className="border rounded p-2"
             id="outlined-multiline-static"
-            label="Annotation"
-            multiline
             rows={4}
             value={annotationText}
             onChange={(e) => setAnnotationText(e.target.value)}
           />
-          <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: '1rem' }}>
-            <Button type="submit" variant="contained">Save</Button>
-            <Button onClick={onCancel} variant="contained">Cancel</Button>
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
+          <div className="flex justify-between mt-4">
+            <button type="submit" className="bg-blue-500 text-white rounded p-2">Save</button>
+            <button onClick={onCancel} className="bg-blue-500 text-white rounded p-2">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
