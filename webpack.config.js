@@ -6,7 +6,9 @@ module.exports = (env, argv) => {
     const mode = argv.mode || 'development';
 
     const config = {
-        performance: {
+    target: 'electron-renderer',
+
+    performance: {
         hints: false,
         maxEntrypointSize: 512000,
         maxAssetSize: 512000
@@ -63,7 +65,7 @@ module.exports = (env, argv) => {
         publicPath: '/',
         },
         proxy: {
-        '/api': 'http://localhost:3000',
+        '/api': 'http://localhost:3002',
         secure: false,
         },
         compress: false,
@@ -73,7 +75,10 @@ module.exports = (env, argv) => {
         historyApiFallback: true,
     },
     };
-
+    config.target = 'node';
+    config.externals = {
+      fs: 'commonjs fs',
+    };
     return config;
 };
 
