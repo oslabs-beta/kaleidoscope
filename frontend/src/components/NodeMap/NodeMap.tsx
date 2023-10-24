@@ -15,6 +15,13 @@ interface Circle {
     data: Span[]; //to store data in each node, might not be efficient
 }
 
+interface Line {
+    from: string;
+    to: string;
+    latency: number;
+    requests: number;
+}
+
 interface Span { 
     name: string;
     context: {
@@ -25,9 +32,7 @@ interface Span {
     start_time: Date;
     end_time: Date;
     attributes: {
-        http: {
-            route: string;
-        }
+        'http.route': string;
     }
     events: {
         name: string;
@@ -39,27 +44,29 @@ interface Span {
 }
 
 const makeNodes = async () => {
-    console.log('invoked awaitFunc');
+    // console.log('invoked awaitFunc');
     // Get spans (trace data) and parse it into circles and lines
     try {
-        const data: any = await fetch('/nodemap')
-        console.log('FETCHED NODES', data);
-        const spans: any = await data.json();  
+        const data: any = await fetch('http://localhost:3001/nodemap')
+        // console.log('FETCHED NODES', data);
+        const spans:{spans:Span[]} = await data.json();  
         console.log('SPAN DATA', spans);
+        // console.log('iterable i hope....', spans.spans)
 
         const defaultNodeRadius = 20;
 
         const endpoints = {};
         const nodes:Circle[] = [];
-        const lines = [];
+        const lines:Line[] = [];
         let counter = 0
-        spans.forEach(span => {
-            console.log('in the for each!!!!!!!')
+        spans.spans.forEach(span => {
+            // console.log('in the for each!!!!!!!', span.attributes)
             //check if we need to create a new node/circle; create if so
-            if(!endpoints[span.attributes.http.route]){ //if endpoint is not yet in our nodes
+            if(!endpoints[span.attributes['http.route']]){ //if endpoint is not yet in our nodes
+                // console.log('inside conditional logic')
                 counter++;
                 nodes.push({
-                    name: span.attributes.http.route,
+                    name: span.attributes['http.route'],
                     id: span.context.span_id,
                     x: counter * 20, 
                     y: counter * 20,
@@ -68,33 +75,37 @@ const makeNodes = async () => {
                     isHovered: false, 
                     data: [span]
                 })
-                endpoints[span.attributes.http.route] = nodes[nodes.length - 1]; //keep references to nodes at each unique endpoint
+                // console.log('pushed node')
+                endpoints[span.attributes['http.route']] = nodes[nodes.length - 1]; //keep references to nodes at each unique endpoint
             }else{
                 //pass span data to an existing node
-                endpoints[span.attributes.http.route].data.push(span);
+                endpoints[span.attributes['http.route']].data.push(span);
             }
+            // console.log('made node, makin line...')
             //check if we need to create a new line (if node has parent_id); create if so
             if(span.parent_id !== null){
-                const parent = nodes.find((s) => s.id === span.parent_id);
-                
-                //check for an exisiting line / incorporate latency
-                const line = lines.find((l) => l.from === parent.name && l.to === span.attributes.http.route);
-
-                if(line) {
-                    line.requests++;
-                    const weight:number = 1 / line.requests;
-                    line.latency = (line.latency * weight) + ((span.end_time.getTime() - span.start_time.getTime()) * (1 - weight)) //calculate avg latency
-                }else{
-                    lines.push({  //create a new line
-                        from: parent.name,
-                        to: span.attributes.http.route,
-                        latency: span.end_time.getTime() - span.start_time.getTime(), 
-                        requests: 1
-                    })
+                const parent:Circle|undefined = nodes.find((s) => s.id === span.parent_id);
+                if(parent){ 
+                    const time1:Date | any = new Date(span.end_time)
+                    const time2:Date | any = new Date(span.start_time)
+                    //check for an exisiting line / incorporate latency
+                    const line:Line|undefined = lines.find((l) => l.from === parent.name && l.to === span.attributes['http.route']);
+                    if(line) {
+                        line.requests++;
+                        const weight:number = 1 / line.requests;
+                        line.latency = ((line.latency * weight) + (time1 - time2) * (1 - weight)); //calculate avg latency
+                    }else{
+                        lines.push({  //create a new line
+                            from: parent.name,
+                            to: span.attributes['http.route'],
+                            latency: (time1 - time2),
+                            requests: 1
+                        })
+                    }
                 }
             }
-            return [nodes, lines];
         })
+        return [nodes, lines];
     }catch(err) {
         console.log('error fetching', err)
     }
@@ -106,7 +117,7 @@ export default function NodeMap() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     // State to manage the circles (nodes) on the canvas
-    const [circles, setCircles] = useState<Circle[]>([
+    let [circles, setCircles] = useState<Circle[]>([
         // Add more circles with IDs and initial positions
     ]);
     let lines = [];
@@ -140,29 +151,40 @@ export default function NodeMap() {
         ctx.stroke();
     };
     
-    const getNewNodeMap =  async () => {
-        const [newCircles, lines]:any = await makeNodes(); 
-        console.log('got EM', newCircles)   
-        setCircles(newCircles);
-    }
-    getNewNodeMap();
-
+    useEffect(() => {
+        const getNewNodeMap = async () => {
+            const [newCircles, newLines]:any = await makeNodes(); 
+            console.log('got EM', newCircles) 
+            lines = newLines; 
+            circles = newCircles
+        }
+        getNewNodeMap();
+    }, [])
+    
     useEffect(() => {
         const canvas = canvasRef.current;
+        if(!canvas){
+            console.log('canvas is undefined')
+            return; 
+        } 
         const ctx = canvas.getContext('2d');
-
-
-
-        const draw = () => {
+        if(!ctx){
+            console.log('ctx is undefined')
+            return; 
+        }
+        
+        const draw = (circles:Circle[], lines:Line[]):void | null => {
             // console.log('draw')
             // clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw lines with labels
             lines.forEach(line => {
-                const fromCircle = circles.find(circle => circle.id === line.from);
-                const toCircle = circles.find(circle => circle.id === line.to);
-
+                // console.log('Check here', circles.find(circle => circle.name === line.from)) 
+                console.log('testing', circles.find(circle => circle.name === line.from))
+                const fromCircle: Circle = circles.find(circle => circle.name === line.from);
+                const toCircle: Circle = circles.find(circle => circle.name === line.to);
+                console.log('from', fromCircle, '  to', toCircle);
                 // Draw line
                 drawLine(ctx, fromCircle, toCircle);
 
@@ -173,22 +195,18 @@ export default function NodeMap() {
                 // Display label
                 ctx.font = '12px Arial';
                 ctx.fillStyle = 'red';
-                ctx.fillText('Trace Data', labelX, labelY);
+                ctx.fillText(`average latency: ${line.latency}ms requests:${line.requests}`, labelX, labelY);
             });
 
             // Draw circles and node labels
             circles.forEach(circle => {
                 // call helper func
                 drawCircle(ctx, circle);
-
                 // Display trace data on the circle
                 // needs to be reconfigured w/ store
-                const data = (data => data.id === circle.id); // needs to reference properties of trace data (span_id, trace_id, etc.)
-                if (data) {
-                    ctx.font = '12px Arial';
-                    ctx.fillStyle = 'white';
-                    ctx.fillText(data.name, circle.x - 15, circle.y);
-                }
+                ctx.font = '12px Arial';
+                ctx.fillStyle = 'white';
+                ctx.fillText(circle.name, circle.x - 15, circle.y);
             });
         };
 
@@ -233,7 +251,7 @@ export default function NodeMap() {
                 }
             });
 
-            draw();
+            draw(circles, lines);
         };
 
         // Attach event listeners
@@ -246,10 +264,10 @@ export default function NodeMap() {
             circles.forEach(circle => {
                 circle.isHovered = false;
             });
-            draw();
+            draw(circles, lines);
         });
 
-        draw();
+        draw(circles,lines);
 
         return () => {
             canvas.removeEventListener('mousedown', handleMouseDown);

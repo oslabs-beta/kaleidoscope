@@ -1,13 +1,14 @@
-const express = require('express');
+// const express = require('express')
+const { Router } = require('express');
 const nodemapController = require('../controllers/nodemapController.ts');
-const nodemapRouter = express.Router();
+const router = Router()
 
-nodemapRouter.get('*', (req, res) => {
-    console.log('nodemaprouter hitttttt')
-    res.status(203).json({ message: res.locals.spans });
+router.get('*', nodemapController.getSpans, (Request, Response) => {
+    // console.log('nodemaprouter hitttttt')
+    Response.status(203).json(Response.locals.spans);
 });
 
-module.exports = nodemapRouter;
+module.exports = router;
 
 
 
