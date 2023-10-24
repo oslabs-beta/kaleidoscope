@@ -4,6 +4,7 @@ import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
 import './NodeMap.css';
 import '../../styles/base.css'
 
+// Circle type definition
 interface Circle {
     name: string;
     id: string;
@@ -111,7 +112,6 @@ const makeNodes = async () => {
     }
 }
 
-
 export default function NodeMap() {
     // Reference to canvas DOM element
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -132,23 +132,23 @@ export default function NodeMap() {
      // Toggle annotation mode on/off
     const toggleAnnotationMode = () => setInAnnotationMode(!inAnnotationMode);
 
-    // Draws a circle on the canvas
-    const drawCircle = (ctx, circle) => {
-        ctx.beginPath();
-        ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'black';
-        ctx.fill();
-        ctx.closePath();
+    // Function to draw circle on canvas
+    const drawCircle = (canvasContext, circle) => {
+        canvasContext.beginPath();
+        canvasContext.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+        canvasContext.fillStyle = 'black';
+        canvasContext.fill();
+        canvasContext.closePath();
     };
 
-    // Draws a line between two circles on the canvas
-    const drawLine = (ctx, circleA, circleB) => {
-        ctx.beginPath();
-        ctx.moveTo(circleA.x, circleA.y);
-        ctx.lineTo(circleB.x, circleB.y);
-        ctx.strokeStyle = 'dark-gray';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+    // Function to draw line between circles
+    const drawLine = (canvasContext, circleA, circleB) => {
+        canvasContext.beginPath();
+        canvasContext.moveTo(circleA.x, circleA.y);
+        canvasContext.lineTo(circleB.x, circleB.y);
+        canvasContext.strokeStyle = 'dark-gray';
+        canvasContext.lineWidth = 2;
+        canvasContext.stroke();
     };
     
     useEffect(() => {
@@ -176,7 +176,7 @@ export default function NodeMap() {
         const draw = (circles:Circle[], lines:Line[]):void | null => {
             // console.log('draw')
             // clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvasContext.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw lines with labels
             lines.forEach(line => {
@@ -186,7 +186,7 @@ export default function NodeMap() {
                 const toCircle: Circle = circles.find(circle => circle.name === line.to);
                 console.log('from', fromCircle, '  to', toCircle);
                 // Draw line
-                drawLine(ctx, fromCircle, toCircle);
+                drawLine(canvasContext, fromCircle, toCircle);
 
                 // Calculate the midpoint of the line for label positioning
                 const labelX = (fromCircle.x + toCircle.x) / 2;
@@ -279,24 +279,34 @@ export default function NodeMap() {
 
 
     return (
-        <div>
-            <h1 className='title'>Cluster Name: My Demo</h1>
-            <canvas className='canvas' ref={canvasRef} width={1200} height={800} />
-            { /* not currently being used but allows annotation form component to be rendered */ }
+        <Box>
+            {/* Title */}
+            <Typography variant="h3" component="div" align="center">
+                Node Map
+            </Typography>
+            {/* Canvas */}
+            <canvas className='canvas' ref={canvasRef} width={1200} height={600} />
+            {/* Conditional rendering of AnnotationForm */}
             {showAnnotation && 
-            <AnnotationForm 
-                x={position.x} 
-                y={position.y} 
-                onSave={(text) => { /* Handle saving annotation */ }}
-                onCancel={() => setShowAnnotation(false)} 
-            />
+                <AnnotationForm
+                    x={position.x}
+                    y={position.y}
+                    onSave={(annotationText) => {
+                        console.log('Annotation saved: ', annotationText);
+                        setShowAnnotation(false);
+                    }}
+                    onCancel={() => setShowAnnotation(false)}
+                />
             }
-            <Link to="/">
-                <button>Go Back</button>
-            </Link>
-            <button id="annotationModeButton" onClick={toggleAnnotationMode}>
-                {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
-            </button>
-        </div>
+            {/* Navigation buttons */}
+            <Container fixed style={{ display: 'flex', justifyContent: 'center' }}>
+                <Link to="/">
+                    <Button>Go Back</Button>
+                </Link>
+                <Button id="annotationModeButton" onClick={toggleAnnotationMode}>
+                    {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
+                </Button>
+            </Container>
+        </Box>
     );
 }
