@@ -1,13 +1,14 @@
-import db from '../models/annotationModel';
-import { Request, Response, NextFunction } from 'express'
+const db = require('../models/annotationModel.ts');
+const fs = require('fs');
+// const { Request, Response, NextFunction } = require('express')
 
 
 
 
-const getSpans = (req: Request, res: Response, next: NextFunction) => {
-    console.log('in the middleware...')
-    res.locals.spans = JSON.parse(fs.readFileSync('sampletracedata.json').toString()) //test data
-    return next();
+const getSpans = (Request, Response, NextFunction) => {
+    // console.log('in the middleware...')
+    Response.locals.spans = JSON.parse(fs.readFileSync('sampletracedata.json').toString()) //test data
+    return NextFunction();
 }
 
 
@@ -20,7 +21,6 @@ const getSpans = (req: Request, res: Response, next: NextFunction) => {
 
 
 
-export const nodemapController = {
-    getSpans,
-    
+module.exports = {
+    getSpans
 }

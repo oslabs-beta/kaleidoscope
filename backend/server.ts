@@ -1,7 +1,6 @@
 const express = require('express');
 const pathModule = require('path');
 const cors = require('cors');
-const fs = require('fs');
 const nodemapRouter = require('./routers/nodemapRouter.ts')
 
 const PORT = 3001;
