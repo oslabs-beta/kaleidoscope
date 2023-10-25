@@ -9,6 +9,8 @@ import NodeMap from './components/NodeMap/NodeMap';
 import ViewCluster from './components/ViewCluster';
 import { store } from './app/store';
 import { Provider } from 'react-redux';
+import './styles/tailwind.css';
+
 
 // Configure routes using createBrowserRouter
 // Define paths and the components to render for each path
@@ -31,7 +33,7 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById('root'));
 // Render the app within RouterProvider to enable routing
 root.render(
-  <Provider store={store}>
-    <RouterProvider router={router} />
+  <Provider store={store}>   
+      <RouterProvider router={router} />
   </Provider>
 );

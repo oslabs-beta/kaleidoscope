@@ -1,118 +1,230 @@
 import React, { useEffect, useRef, useState } from 'react';
+
 import { Link } from 'react-router-dom';
 import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
-import './NodeMap.css';
-import '../../styles/base.css'
+import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
 
+// Circle type definition
 interface Circle {
-    id: number;
+    name: string;
+    id: string;
     x: number;
     y: number;
     radius: number;
     isDragging: boolean;
     isHovered: boolean; // Add isHovered property
+    data: Span[]; //to store data in each node, might not be efficient
 }
 
+interface Line {
+    from: string;
+    to: string;
+    latency: number;
+    requests: number;
+}
+
+interface Span { 
+    name: string;
+    context: {
+        trace_id: string;
+        span_id: string;
+    }
+    parent_id: string;
+    start_time: Date;
+    end_time: Date;
+    attributes: {
+        'http.route': string;
+    }
+    events: {
+        name: string;
+        timestamp: Date;
+        attributes: {
+            event_attributes: Number;
+        }
+    }[]
+}
+
+const makeNodes = async () => {
+    // console.log('invoked awaitFunc');
+    // Get spans (trace data) and parse it into circles and lines
+    try {
+        const data: any = await fetch('http://localhost:3001/nodemap')
+        // console.log('FETCHED NODES', data);
+        const spans:{spans:Span[]} = await data.json();  
+        console.log('SPAN DATA', spans);
+        // console.log('iterable i hope....', spans.spans)
+
+        const defaultNodeRadius = 20;
+
+        const endpoints = {};
+        const nodes:Circle[] = [];
+        const lines:Line[] = [];
+        let counter = 0
+        spans.spans.forEach(span => {
+            // console.log('in the for each!!!!!!!', span.attributes)
+            //check if we need to create a new node/circle; create if so
+            if(!endpoints[span.attributes['http.route']]){ //if endpoint is not yet in our nodes
+                // console.log('inside conditional logic')
+                counter++;
+                nodes.push({
+                    name: span.attributes['http.route'],
+                    id: span.context.span_id,
+                    x: counter * 20, 
+                    y: counter * 20,
+                    radius: defaultNodeRadius,
+                    isDragging: false,
+                    isHovered: false, 
+                    data: [span]
+                })
+                // console.log('pushed node')
+                endpoints[span.attributes['http.route']] = nodes[nodes.length - 1]; //keep references to nodes at each unique endpoint
+            }else{
+                //pass span data to an existing node
+                endpoints[span.attributes['http.route']].data.push(span);
+            }
+            // console.log('made node, makin line...')
+            //check if we need to create a new line (if node has parent_id); create if so
+            if(span.parent_id !== null){
+                const parent:Circle|undefined = nodes.find((s) => s.id === span.parent_id);
+                if(parent){ 
+                    const time1:Date | any = new Date(span.end_time)
+                    const time2:Date | any = new Date(span.start_time)
+                    //check for an exisiting line / incorporate latency
+                    const line:Line|undefined = lines.find((l) => l.from === parent.name && l.to === span.attributes['http.route']);
+                    if(line) {
+                        line.requests++;
+                        const weight:number = 1 / line.requests;
+                        line.latency = ((line.latency * weight) + (time1 - time2) * (1 - weight)); //calculate avg latency
+                    }else{
+                        lines.push({  //create a new line
+                            from: parent.name,
+                            to: span.attributes['http.route'],
+                            latency: (time1 - time2),
+                            requests: 1
+                        })
+                    }
+                }
+            }
+        })
+        return [nodes, lines];
+    }catch(err) {
+        console.log('error fetching', err)
+    }
+}
+
+
+// Main NodeMap component
 export default function NodeMap() {
+    /* ------------------------------ State Management ------------------------------ */
+
     // Reference to canvas DOM element
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     // State to manage the circles (nodes) on the canvas
-    const [circles, setCircles] = useState<Circle[]>([
-        // Change Id values to be represent incoming data values
-        { id: 1, x: 100, y: 100, radius: 20, isDragging: false, isHovered: false },
-        { id: 2, x: 200, y: 200, radius: 20, isDragging: false, isHovered: false },
-        { id: 3, x: 300, y: 300, radius: 20, isDragging: false, isHovered: false },
+    let [circles, setCircles] = useState<Circle[]>([
         // Add more circles with IDs and initial positions
     ]);
 
-    // Define your trace data (replace this with your actual data)
-    const traceData = [
-        { id: 1, label: 'Endpoint 1', traceInfo: 'Information for Node 1' },
-        { id: 2, label: 'Endpoint 2', traceInfo: 'Information for Node 2' },
-        { id: 3, label: 'Endpoint 3', traceInfo: 'Information for Node 3' },
-        // Add more trace data
-    ];
+    let lines = [];
 
-    // Define line data
-    const lines = [
-        { from: 1, to: 2 },
-        { from: 2, to: 3 },
-        // { from: 3, to: 1 },
-        // Define connections between nodes
-    ];
-
-    // State to manage annotation form visibility and position
-    const [showAnnotation, setShowAnnotation] = React.useState(false);
-    const [position, setPosition] = React.useState({ x: 0, y: 0 });
-
-    // State to manage annotation mode
+    // State to handle saved annotations
+    const [annotations, setAnnotations] = useState([]);
+    const [showAnnotation, setShowAnnotation] = useState(false);
+    const [showAnnotationMenu, setShowAnnotationMenu] = useState(false);
+    const [position, setPosition] = useState({ x: 0, y: 0 });
     const [inAnnotationMode, setInAnnotationMode] = useState(false);
+    const [selectedCircle, setSelectedCircle] = useState(null);
+    const [selectedLine, setSelectedLine] = useState(null);
+
+   /* ------------------------------ Helper Functions ------------------------------ */
 
      // Toggle annotation mode on/off
-     const toggleAnnotationMode = () => setInAnnotationMode(!inAnnotationMode);
+    const toggleAnnotationMode = () => setInAnnotationMode(!inAnnotationMode);
 
-    // Draws a circle on the canvas
-    const drawCircle = (ctx, circle) => {
-        ctx.beginPath();
-        ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'black';
-        ctx.fill();
-        ctx.closePath();
+    // Function to toggle annotation menu
+    const toggleAnnotationMenu = () => setShowAnnotationMenu(!showAnnotationMenu);
+
+    // Function to draw circle on canvas
+    const drawCircle = (canvasContext, circle) => {
+        canvasContext.beginPath();
+        canvasContext.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+        canvasContext.fillStyle = 'black';
+        canvasContext.fill();
+        canvasContext.closePath();
     };
 
-    // Draws a line between two circles on the canvas
-    const drawLine = (ctx, circleA, circleB) => {
-        ctx.beginPath();
-        ctx.moveTo(circleA.x, circleA.y);
-        ctx.lineTo(circleB.x, circleB.y);
-        ctx.strokeStyle = 'dark-gray';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+    // Function to draw line between circles
+    const drawLine = (canvasContext, circleA, circleB) => {
+        canvasContext.beginPath();
+        canvasContext.moveTo(circleA.x, circleA.y);
+        canvasContext.lineTo(circleB.x, circleB.y);
+        canvasContext.strokeStyle = 'dark-gray';
+        canvasContext.lineWidth = 2;
+        canvasContext.stroke();
     };
 
+    const draw = (canvasContext, canvas, circles:Circle[], lines:Line[]):void | null => {
+        // console.log('draw')
+        // clear canvas
+        canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw lines with labels
+        lines.forEach(line => {
+            // console.log('Check here', circles.find(circle => circle.name === line.from)) 
+            console.log('testing', circles.find(circle => circle.name === line.from))
+            const fromCircle: Circle = circles.find(circle => circle.name === line.from);
+            const toCircle: Circle = circles.find(circle => circle.name === line.to);
+            console.log('from', fromCircle, '  to', toCircle);
+            // Draw line
+            drawLine(canvasContext, fromCircle, toCircle);
+
+        // Calculate the midpoint of the line for label positioning
+        const labelX = (fromCircle.x + toCircle.x) / 2;
+        const labelY = (fromCircle.y + toCircle.y) / 2;
+
+            // Display label
+            canvasContext.font = '12px Arial';
+            canvasContext.fillStyle = 'red';
+            canvasContext.fillText(`average latency: ${line.latency}ms requests:${line.requests}`, labelX, labelY);
+        });
+
+        // Draw circles and node labels
+        circles.forEach(circle => {
+            // call helper func
+            drawCircle(canvasContext, circle);
+            // Display trace data on the circle
+            // needs to be reconfigured w/ store
+            canvasContext.font = '12px Arial';
+            canvasContext.fillStyle = 'white';
+            canvasContext.fillText(circle.name, circle.x - 15, circle.y);
+        });
+    };
+
+        /* ------------------------------ The useEffect Zone------------------------------ */
+
+    // Makes map w/ new nodes and lines
+    useEffect(() => {
+        const getNewNodeMap = async () => {
+            const [newCircles, newLines]:any = await makeNodes(); 
+            console.log('got EM', newCircles) 
+            lines = newLines; 
+            circles = newCircles
+        }
+        getNewNodeMap();
+    }, [])
+    
     useEffect(() => {
         const canvas = canvasRef.current;
+        const canvasContext = canvas.getContext('2d');
+        if(!canvas){
+            console.log('canvas is undefined')
+            return; 
+        } 
         const ctx = canvas.getContext('2d');
-
-        const draw = () => {
-            // console.log('draw')
-            // clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw lines with labels
-            lines.forEach(line => {
-                const fromCircle = circles.find(circle => circle.id === line.from);
-                const toCircle = circles.find(circle => circle.id === line.to);
-
-                // Draw line
-                drawLine(ctx, fromCircle, toCircle);
-
-                // Calculate the midpoint of the line for label positioning
-                const labelX = (fromCircle.x + toCircle.x) / 2;
-                const labelY = (fromCircle.y + toCircle.y) / 2;
-
-                // Display label
-                ctx.font = '12px Arial';
-                ctx.fillStyle = 'red';
-                ctx.fillText('Trace Data', labelX, labelY);
-            });
-
-            // Draw circles and node labels
-            circles.forEach(circle => {
-                // call helper func
-                drawCircle(ctx, circle);
-
-                // Display trace data on the circle
-                // needs to be reconfigured w/ store
-                const data = traceData.find(data => data.id === circle.id); // needs to reference properties of trace data (span_id, trace_id, etc.)
-                if (data) {
-                    ctx.font = '12px Arial';
-                    ctx.fillStyle = 'white';
-                    ctx.fillText(data.label, circle.x - 15, circle.y);
-                }
-            });
-        };
+        if(!ctx){
+            console.log('ctx is undefined')
+            return; 
+        }
 
         // Handles mousedown event on the canvas
         const handleMouseDown = (e: MouseEvent) => {
@@ -123,12 +235,40 @@ export default function NodeMap() {
                 const rect = canvas.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-                setPosition({ x, y });
-                setShowAnnotation(true);
+                if (!selectedCircle) {
+                    setPosition({ x, y });
+                    setShowAnnotation(true);
+                    circles.forEach(circle => {
+                        const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
+                        if (distance <= circle.radius) {
+                            console.log('selected circle', circle.id)
+                            setSelectedCircle(circle);
+                        }
+                    });
+                    lines.forEach(line => {
+                        const fromCircle = circles.find(circle => circle.id === line.from);
+                        const toCircle = circles.find(circle => circle.id === line.to);
+                        const slope = (toCircle.y - fromCircle.y) / (toCircle.x - fromCircle.x);
+                        const yIntercept = fromCircle.y - slope * fromCircle.x;
+                        const distance = Math.abs(slope * mouseX - mouseY + yIntercept) / Math.sqrt(slope ** 2 + 1);
+                        if (distance <= 5) {
+                            console.log('selected line', line)
+                            setSelectedLine(line);
+                        }
+                    });
+                }
+                circles.forEach(circle => {
+                    const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
+                    if (distance <= circle.radius) {
+                        console.log('selected circle', circle.id)
+                        setSelectedCircle(circle);
+                    }
+                });
             } else {
                 circles.forEach(circle => {
                     const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
                     if (distance <= circle.radius) {
+                        console.log('selected circle', circle.id)
                         circle.isDragging = true;
                     }
                 });
@@ -155,7 +295,7 @@ export default function NodeMap() {
                 }
             });
 
-            draw();
+            draw(canvasContext, canvas, circles, lines);
         };
 
         // Attach event listeners
@@ -168,37 +308,83 @@ export default function NodeMap() {
             circles.forEach(circle => {
                 circle.isHovered = false;
             });
-            draw();
+            draw(canvasContext, canvas, circles, lines);
         });
 
-        draw();
+        draw(canvasContext, canvas, circles, lines);
 
         return () => {
             canvas.removeEventListener('mousedown', handleMouseDown);
             canvas.removeEventListener('mouseup', handleMouseUp);
             canvas.removeEventListener('mousemove', handleMouseMove);
+
         };
-    }, [circles, traceData, lines]);
+    }, [inAnnotationMode]);
+
+    //resizing useEffect
+    useEffect(() => {
+        const updateCanvasSize = () => {
+            if (canvasRef.current) {
+                const canvas = canvasRef.current;
+                const canvasContext = canvas.getContext('2d');
+                canvas.width = window.innerWidth * 0.8; // 80% of window width
+                canvas.height = window.innerHeight * 0.6; // 60% of window height
+                draw(canvasContext, canvas, circles, lines);
+            }
+        };
+        
+        window.addEventListener('resize', updateCanvasSize);
+        updateCanvasSize(); // Call it once to set initial size
+        
+        return () => {
+            window.removeEventListener('resize', updateCanvasSize);
+        };
+    }, []);
 
     return (
-        <div>
-            <h1 className='title'>Cluster Name: My Demo</h1>
-            <canvas className='canvas' ref={canvasRef} width={1200} height={800} />
-            { /* not currently being used but allows annotation form component to be rendered */ }
-            {showAnnotation && 
-            <AnnotationForm 
-                x={position.x} 
-                y={position.y} 
-                onSave={(text) => { /* Handle saving annotation */ }}
-                onCancel={() => setShowAnnotation(false)} 
-            />
+        <div className="flex flex-col items-center justify-center h-screen">
+            <div>
+                In Annotation Mode: {inAnnotationMode.toString()}
+            </div>
+            {/* Title */}
+            <h3 className="text-4xl text-center mb-4"> Node Map </h3>
+        
+            {/* Canvas */}
+            <div className="canvas-container w-4/5 h-3/5 relative">
+                <canvas className="absolute inset-0 border-dashed border-2 border-gray-600 w-full h-full" ref={canvasRef} />
+            </div>
+            {/* Conditional rendering of AnnotationForm */}
+            {showAnnotation && (selectedCircle || selectedLine) && 
+                <AnnotationForm
+                    x={position.x}
+                    y={position.y}
+                    onSave={(annotationText) => {
+                        console.log('Annotation saved: ', annotationText);
+                        setShowAnnotation(false);
+                        setSelectedLine(null);
+                        setSelectedCircle(null);
+                    }}
+                    onCancel={() => {
+                        setShowAnnotation(false);
+                        setSelectedLine(null);
+                        setSelectedCircle(null);
+                    }}
+                />
             }
-            <Link to="/">
-                <button>Go Back</button>
-            </Link>
-            <button id="annotationModeButton" onClick={toggleAnnotationMode}>
-                {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
-            </button>
+            {/* Conditional rendering of AnnotationMenu */}
+            {showAnnotationMenu && <AnnotationMenu />}
+            {/* Navigation buttons */}
+            <div className="flex justify-center mt-4">
+                <Link to="/" className="mr-2">
+                    <button className="bg-blue-500 text-white p-2 rounded">Go Back</button>
+                </Link>
+                <button onClick={toggleAnnotationMode} className="bg-blue-500 text-white p-2 rounded mr-2">
+                    {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
+                </button>
+                <button onClick={toggleAnnotationMenu} className="bg-blue-500 text-white p-2 rounded">
+                    {showAnnotationMenu ? 'Hide Annotation Menu' : 'Show Annotation Menu'}
+                </button>
+            </div>
         </div>
     );
 }
