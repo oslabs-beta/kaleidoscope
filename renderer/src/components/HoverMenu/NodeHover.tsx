@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from 'react-redux'
-
 import "./NodeHover.css";
 
 export const NodeHover = () => {
