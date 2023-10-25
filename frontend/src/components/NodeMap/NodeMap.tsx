@@ -1,48 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-
 import { Link } from 'react-router-dom';
 import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
 import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
-
-// Circle type definition
-interface Circle {
-    name: string;
-    id: string;
-    x: number;
-    y: number;
-    radius: number;
-    isDragging: boolean;
-    isHovered: boolean; // Add isHovered property
-    data: Span[]; //to store data in each node, might not be efficient
-}
-
-interface Line {
-    from: string;
-    to: string;
-    latency: number;
-    requests: number;
-}
-
-interface Span { 
-    name: string;
-    context: {
-        trace_id: string;
-        span_id: string;
-    }
-    parent_id: string;
-    start_time: Date;
-    end_time: Date;
-    attributes: {
-        'http.route': string;
-    }
-    events: {
-        name: string;
-        timestamp: Date;
-        attributes: {
-            event_attributes: Number;
-        }
-    }[]
-}
+import { Circle, Line, Span } from '../../types';
 
 const makeNodes = async () => {
     // console.log('invoked awaitFunc');
