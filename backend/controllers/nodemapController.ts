@@ -1,22 +1,25 @@
 const db = require('../models/annotationModel.ts');
 const fs = require('fs');
 // const { Request, Response, NextFunction } = require('express')
-import { Circle, Line, Span } from '../../frontend/src/types'
+import { Circle, Line, Span } from '../types';
 
-const getSpans = (Request, Response, NextFunction) => {
-    // console.log('in the middleware...')
-    Response.locals.spans = JSON.parse(fs.readFileSync('sampletracedata.json').toString()) //test data
-    return NextFunction();
+const getSpans = (req, res, next) => {
+    console.log('in the middleware...')
+    res.locals.spans = JSON.parse(fs.readFileSync('sampletracedata.json').toString()) //test data
+    return next();
 }
 
-const makeNodes = async () => {
+const makeNodes = async (req, res, next) => {
     // console.log('invoked awaitFunc');
     // Get spans (trace data) and parse it into circles and lines
-    try {
-        const data: any = await fetch('http://localhost:3001/nodemap')
+
+        // const data: any = await fetch('http://localhost:3001/nodemap')
         // console.log('FETCHED NODES', data);
-        const spans:{spans:Span[]} = await data.json();  
-        console.log('SPAN DATA', spans);
+        // const spans:{spans:Span[]} = await data.json();  
+        const spans:{spans:Span[]} = res.locals.spans;
+
+        // console.log('SPAN DATA', spans);
+        console.log('res.locals.spans', res.locals.spans);
         // console.log('iterable i hope....', spans.spans)
 
         const defaultNodeRadius = 20;
@@ -26,7 +29,7 @@ const makeNodes = async () => {
         const lines:Line[] = [];
         let counter = 0
         spans.spans.forEach(span => {
-            // console.log('in the for each!!!!!!!', span.attributes)
+            console.log('in the for each!!!!!!!', span.attributes)
             //check if we need to create a new node/circle; create if so
             if(!endpoints[span.attributes['http.route']]){ //if endpoint is not yet in our nodes
                 // console.log('inside conditional logic')
@@ -71,12 +74,11 @@ const makeNodes = async () => {
                 }
             }
         })
-        return [nodes, lines];
-    }catch(err) {
-        console.log('error fetching', err)
-    }
+        res.locals.nodes = [nodes, lines]; //store nodes and lines in res.locals 
+        return next();
 }
 
 module.exports = {
-    getSpans
+    getSpans,
+    makeNodes
 }

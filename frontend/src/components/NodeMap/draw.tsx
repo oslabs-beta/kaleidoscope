@@ -1,7 +1,7 @@
 import { Circle, Line } from '../../types';
 
 // Function to draw circle on canvas
-export const drawCircle = (canvasContext, circle) => {
+const drawCircle = (canvasContext, circle) => {
     canvasContext.beginPath();
     canvasContext.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
     canvasContext.fillStyle = 'black';
@@ -10,7 +10,7 @@ export const drawCircle = (canvasContext, circle) => {
 };
 
 // Function to draw line between circles
-export const drawLine = (canvasContext, circleA, circleB) => {
+const drawLine = (canvasContext, circleA, circleB) => {
     canvasContext.beginPath();
     canvasContext.moveTo(circleA.x, circleA.y);
     canvasContext.lineTo(circleB.x, circleB.y);
@@ -24,8 +24,10 @@ export const draw = (canvasContext, canvas, circles:Circle[], lines:Line[]):void
     // clear canvas
     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
 
+    console.log('lines in draw', lines);
     // Draw lines with labels
     lines.forEach(line => {
+        console.log('line', line);
         // console.log('Check here', circles.find(circle => circle.name === line.from)) 
         console.log('testing', circles.find(circle => circle.name === line.from))
         const fromCircle: Circle = circles.find(circle => circle.name === line.from);
