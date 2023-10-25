@@ -3,7 +3,7 @@ const { Router } = require('express');
 const nodemapController = require('../controllers/nodemapController.ts');
 const router = Router()
 
-router.get('*', nodemapController.getSpans, (Request, Response) => {
+router.get('*', nodemapController.getSpans, nodemapController.makeNode, (Request, Response) => {
     // console.log('nodemaprouter hitttttt')
     Response.status(203).json(Response.locals.spans);
 });
