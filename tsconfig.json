@@ -12,7 +12,7 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
     "paths": {
-        "*": ["node_modules/*", "frontend/*", "backend/*"] // Modify this to match your project structure
+        "*": ["node_modules/*", "frontend/*", "backend/*", "backend/controllers", "backend/models", "backend/routers"] // Modify this to match your project structure
     }
 
     },

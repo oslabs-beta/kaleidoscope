@@ -3,74 +3,75 @@ import { Link } from 'react-router-dom';
 import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
 import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
 import { Circle, Line, Span } from '../../types';
+import { draw } from './draw';
 
-const makeNodes = async () => {
-    // console.log('invoked awaitFunc');
-    // Get spans (trace data) and parse it into circles and lines
-    try {
-        const data: any = await fetch('http://localhost:3001/nodemap')
-        // console.log('FETCHED NODES', data);
-        const spans:{spans:Span[]} = await data.json();  
-        console.log('SPAN DATA', spans);
-        // console.log('iterable i hope....', spans.spans)
+// const makeNodes = async () => {
+//     // console.log('invoked awaitFunc');
+//     // Get spans (trace data) and parse it into circles and lines
+//     try {
+//         const data: any = await fetch('http://localhost:3001/nodemap')
+//         // console.log('FETCHED NODES', data);
+//         const spans:{spans:Span[]} = await data.json();  
+//         console.log('SPAN DATA', spans);
+//         // console.log('iterable i hope....', spans.spans)
 
-        const defaultNodeRadius = 20;
+//         const defaultNodeRadius = 20;
 
-        const endpoints = {};
-        const nodes:Circle[] = [];
-        const lines:Line[] = [];
-        let counter = 0
-        spans.spans.forEach(span => {
-            // console.log('in the for each!!!!!!!', span.attributes)
-            //check if we need to create a new node/circle; create if so
-            if(!endpoints[span.attributes['http.route']]){ //if endpoint is not yet in our nodes
-                // console.log('inside conditional logic')
-                counter++;
-                nodes.push({
-                    name: span.attributes['http.route'],
-                    id: span.context.span_id,
-                    x: counter * 20, 
-                    y: counter * 20,
-                    radius: defaultNodeRadius,
-                    isDragging: false,
-                    isHovered: false, 
-                    data: [span]
-                })
-                // console.log('pushed node')
-                endpoints[span.attributes['http.route']] = nodes[nodes.length - 1]; //keep references to nodes at each unique endpoint
-            }else{
-                //pass span data to an existing node
-                endpoints[span.attributes['http.route']].data.push(span);
-            }
-            // console.log('made node, makin line...')
-            //check if we need to create a new line (if node has parent_id); create if so
-            if(span.parent_id !== null){
-                const parent:Circle|undefined = nodes.find((s) => s.id === span.parent_id);
-                if(parent){ 
-                    const time1:Date | any = new Date(span.end_time)
-                    const time2:Date | any = new Date(span.start_time)
-                    //check for an exisiting line / incorporate latency
-                    const line:Line|undefined = lines.find((l) => l.from === parent.name && l.to === span.attributes['http.route']);
-                    if(line) {
-                        line.requests++;
-                        const weight:number = 1 / line.requests;
-                        line.latency = ((line.latency * weight) + (time1 - time2) * (1 - weight)); //calculate avg latency
-                    }else{
-                        lines.push({  //create a new line
-                            from: parent.name,
-                            to: span.attributes['http.route'],
-                            latency: (time1 - time2),
-                            requests: 1
-                        })
-                    }
-                }
-            }
-        })
-        return [nodes, lines];
-    }catch(err) {
-        console.log('error fetching', err)
-    }
-}
+//         const endpoints = {};
+//         const nodes:Circle[] = [];
+//         const lines:Line[] = [];
+//         let counter = 0
+//         spans.spans.forEach(span => {
+//             // console.log('in the for each!!!!!!!', span.attributes)
+//             //check if we need to create a new node/circle; create if so
+//             if(!endpoints[span.attributes['http.route']]){ //if endpoint is not yet in our nodes
+//                 // console.log('inside conditional logic')
+//                 counter++;
+//                 nodes.push({
+//                     name: span.attributes['http.route'],
+//                     id: span.context.span_id,
+//                     x: counter * 20, 
+//                     y: counter * 20,
+//                     radius: defaultNodeRadius,
+//                     isDragging: false,
+//                     isHovered: false, 
+//                     data: [span]
+//                 })
+//                 // console.log('pushed node')
+//                 endpoints[span.attributes['http.route']] = nodes[nodes.length - 1]; //keep references to nodes at each unique endpoint
+//             }else{
+//                 //pass span data to an existing node
+//                 endpoints[span.attributes['http.route']].data.push(span);
+//             }
+//             // console.log('made node, makin line...')
+//             //check if we need to create a new line (if node has parent_id); create if so
+//             if(span.parent_id !== null){
+//                 const parent:Circle|undefined = nodes.find((s) => s.id === span.parent_id);
+//                 if(parent){ 
+//                     const time1:Date | any = new Date(span.end_time)
+//                     const time2:Date | any = new Date(span.start_time)
+//                     //check for an exisiting line / incorporate latency
+//                     const line:Line|undefined = lines.find((l) => l.from === parent.name && l.to === span.attributes['http.route']);
+//                     if(line) {
+//                         line.requests++;
+//                         const weight:number = 1 / line.requests;
+//                         line.latency = ((line.latency * weight) + (time1 - time2) * (1 - weight)); //calculate avg latency
+//                     }else{
+//                         lines.push({  //create a new line
+//                             from: parent.name,
+//                             to: span.attributes['http.route'],
+//                             latency: (time1 - time2),
+//                             requests: 1
+//                         })
+//                     }
+//                 }
+//             }
+//         })
+//         return [nodes, lines];
+//     }catch(err) {
+//         console.log('error fetching', err)
+//     }
+// }
 
 
 // Main NodeMap component
@@ -104,71 +105,19 @@ export default function NodeMap() {
     // Function to toggle annotation menu
     const toggleAnnotationMenu = () => setShowAnnotationMenu(!showAnnotationMenu);
 
-    // Function to draw circle on canvas
-    const drawCircle = (canvasContext, circle) => {
-        canvasContext.beginPath();
-        canvasContext.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
-        canvasContext.fillStyle = 'black';
-        canvasContext.fill();
-        canvasContext.closePath();
-    };
-
-    // Function to draw line between circles
-    const drawLine = (canvasContext, circleA, circleB) => {
-        canvasContext.beginPath();
-        canvasContext.moveTo(circleA.x, circleA.y);
-        canvasContext.lineTo(circleB.x, circleB.y);
-        canvasContext.strokeStyle = 'dark-gray';
-        canvasContext.lineWidth = 2;
-        canvasContext.stroke();
-    };
-
-    const draw = (canvasContext, canvas, circles:Circle[], lines:Line[]):void | null => {
-        // console.log('draw')
-        // clear canvas
-        canvasContext.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw lines with labels
-        lines.forEach(line => {
-            // console.log('Check here', circles.find(circle => circle.name === line.from)) 
-            console.log('testing', circles.find(circle => circle.name === line.from))
-            const fromCircle: Circle = circles.find(circle => circle.name === line.from);
-            const toCircle: Circle = circles.find(circle => circle.name === line.to);
-            console.log('from', fromCircle, '  to', toCircle);
-            // Draw line
-            drawLine(canvasContext, fromCircle, toCircle);
-
-        // Calculate the midpoint of the line for label positioning
-        const labelX = (fromCircle.x + toCircle.x) / 2;
-        const labelY = (fromCircle.y + toCircle.y) / 2;
-
-            // Display label
-            canvasContext.font = '12px Arial';
-            canvasContext.fillStyle = 'red';
-            canvasContext.fillText(`average latency: ${line.latency}ms requests:${line.requests}`, labelX, labelY);
-        });
-
-        // Draw circles and node labels
-        circles.forEach(circle => {
-            // call helper func
-            drawCircle(canvasContext, circle);
-            // Display trace data on the circle
-            // needs to be reconfigured w/ store
-            canvasContext.font = '12px Arial';
-            canvasContext.fillStyle = 'white';
-            canvasContext.fillText(circle.name, circle.x - 15, circle.y);
-        });
-    };
-
         /* ------------------------------ The useEffect Zone------------------------------ */
 
     // Makes map w/ new nodes and lines
     useEffect(() => {
         const getNewNodeMap = async () => {
-            const [newCircles, newLines]:any = await makeNodes(); 
-            console.log('got EM', newCircles) 
-            lines = newLines; 
-            circles = newCircles
+            let result = await fetch('http://localhost:3001/nodemap'); // fetch goes here
+            result = await result.json()
+            console.log('result', result);
+            circles= result[0]
+            lines = result[1]
+            console.log('got EM', circles, lines)
+            // lines = newLines; 
+            // circles = newCircles
         }
         getNewNodeMap();
     }, [])
