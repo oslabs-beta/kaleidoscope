@@ -187,27 +187,28 @@ export default function NodeMap() {
             <h3 className="text-4xl text-center text-sky-50 mb-4"> Node Map </h3>
         
             {/* Canvas */}
-            <div className="canvas-container w-4/5 h-3/5 relative">
-                <canvas className="absolute inset-0 border-solid border-2 border-gray-600 rounded-md w-full h-full" ref={canvasRef} />
+            <div className="relative canvas-container w-4/5 h-3/5">
+                <canvas className="relative inset-0 border-solid border-2 border-gray-600 rounded-md w-full h-full" ref={canvasRef} />
+                {/* Conditional rendering of AnnotationForm */}
+                {showAnnotation && (selectedCircle || selectedLine) && 
+                    <AnnotationForm
+                        x={position.x}
+                        y={position.y}
+                        onSave={(annotationText) => {
+                            console.log('Annotation saved: ', annotationText);
+                            setShowAnnotation(false);
+                            setSelectedLine(null);
+                            setSelectedCircle(null);
+                        }}
+                        onCancel={() => {
+                            setShowAnnotation(false);
+                            setSelectedLine(null);
+                            setSelectedCircle(null);
+                        }}
+                    />
+                }
             </div>
-            {/* Conditional rendering of AnnotationForm */}
-            {showAnnotation && (selectedCircle || selectedLine) && 
-                <AnnotationForm
-                    x={position.x}
-                    y={position.y}
-                    onSave={(annotationText) => {
-                        console.log('Annotation saved: ', annotationText);
-                        setShowAnnotation(false);
-                        setSelectedLine(null);
-                        setSelectedCircle(null);
-                    }}
-                    onCancel={() => {
-                        setShowAnnotation(false);
-                        setSelectedLine(null);
-                        setSelectedCircle(null);
-                    }}
-                />
-            }
+
             {/* Conditional rendering of AnnotationMenu */}
             {showAnnotationMenu && <AnnotationMenu />}
             {/* Navigation buttons */}

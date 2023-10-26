@@ -6,7 +6,7 @@ import { CSSProperties } from 'react';
 
 export const AnnotationForm = ({ x, y, onSave, onCancel }) => {
   const [annotationText, setAnnotationText] = useState('');
-
+  console.log('x', x, 'y', y);
   // Function to handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
