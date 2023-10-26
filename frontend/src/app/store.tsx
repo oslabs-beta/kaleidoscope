@@ -1,13 +1,16 @@
 // src/app/store.js
 import { configureStore } from '@reduxjs/toolkit';
+import { combineReducers } from '@reduxjs/toolkit';
 import nodeMapReducer from '../features/nodeMap/nodeMapSlice';
-// import annotationsReducer from '../features/annotations/annotationsSlice';
+import annotationsReducer from '../features/annotation/annotationSlice';
+
+const rootReducer = combineReducers({
+  nodeMap: nodeMapReducer,
+  annotations: annotationsReducer,
+})
 
 export const store = configureStore({
-  reducer: {
-    nodeMap: nodeMapReducer,
-    // annotations: annotationsReducer,
-  },
+  reducer: rootReducer,
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

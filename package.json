@@ -48,6 +48,7 @@
   "devDependencies": {
     "@types/node": "^20.8.7",
     "@types/react-redux": "^7.1.16",
+    "electron-devtools-installer": "^3.2.0",
     "html-webpack-plugin": "^5.5.3",
     "ts-loader": "^9.5.0"
   }
