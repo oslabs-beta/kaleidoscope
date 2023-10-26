@@ -70,13 +70,12 @@ export default function NodeMap() {
                     circles.forEach(circle => {
                         const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
                         if (distance <= circle.radius) {
-                            console.log('selected circle', circle.id)
                             setSelectedCircle(circle);
                         }
                     });
                     lines.forEach(line => {
-                        const fromCircle = circles.find(circle => circle.id === line.from);
-                        const toCircle = circles.find(circle => circle.id === line.to);
+                        const fromCircle = circles.find(circle => circle.name === line.from);
+                        const toCircle = circles.find(circle => circle.name === line.to);
                         const slope = (toCircle.y - fromCircle.y) / (toCircle.x - fromCircle.x);
                         const yIntercept = fromCircle.y - slope * fromCircle.x;
                         const distance = Math.abs(slope * mouseX - mouseY + yIntercept) / Math.sqrt(slope ** 2 + 1);
@@ -180,16 +179,16 @@ export default function NodeMap() {
     }, []);
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen">
+        <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-gray-900 via-slate-800 to-cyan-900">
             <div>
                 In Annotation Mode: {inAnnotationMode.toString()}
             </div>
             {/* Title */}
-            <h3 className="text-4xl text-center mb-4"> Node Map </h3>
+            <h3 className="text-4xl text-center text-sky-50 mb-4"> Node Map </h3>
         
             {/* Canvas */}
             <div className="canvas-container w-4/5 h-3/5 relative">
-                <canvas className="absolute inset-0 border-dashed border-2 border-gray-600 w-full h-full" ref={canvasRef} />
+                <canvas className="absolute inset-0 border-solid border-2 border-gray-600 rounded-md w-full h-full" ref={canvasRef} />
             </div>
             {/* Conditional rendering of AnnotationForm */}
             {showAnnotation && (selectedCircle || selectedLine) && 
@@ -214,12 +213,12 @@ export default function NodeMap() {
             {/* Navigation buttons */}
             <div className="flex justify-center mt-4">
                 <Link to="/" className="mr-2">
-                    <button className="bg-blue-500 text-white p-2 rounded">Go Back</button>
+                    <button className="bg-cyan-950 text-sky-50 p-2 rounded">Go Back</button>
                 </Link>
-                <button onClick={toggleAnnotationMode} className="bg-blue-500 text-white p-2 rounded mr-2">
+                <button onClick={toggleAnnotationMode} className="bg-cyan-200 text-cyan-950 p-2 rounded mr-2">
                     {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
                 </button>
-                <button onClick={toggleAnnotationMenu} className="bg-blue-500 text-white p-2 rounded">
+                <button onClick={toggleAnnotationMenu} className="bg-cyan-200 text-cyan-950 p-2 rounded">
                     {showAnnotationMenu ? 'Hide Annotation Menu' : 'Show Annotation Menu'}
                 </button>
             </div>
