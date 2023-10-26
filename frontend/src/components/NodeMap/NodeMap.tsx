@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
 import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
+import { NodeHover } from '../HoverComponent/NodeHover'
+
 
 // Circle type definition
 interface Circle {
@@ -135,6 +137,7 @@ export default function NodeMap() {
     const [inAnnotationMode, setInAnnotationMode] = useState(false);
     const [selectedCircle, setSelectedCircle] = useState(null);
     const [selectedLine, setSelectedLine] = useState(null);
+    const [hoverInfo, setHoverInfo] = useState({ x: 0, y: 0, content: '' });
 
    /* ------------------------------ Helper Functions ------------------------------ */
 
@@ -287,16 +290,53 @@ export default function NodeMap() {
             const rect = canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
+        
+            let hoveredNode = null;
 
+            // circles.forEach(circle => {
+            //     if (circle.isDragging) {
+            //     circle.x = mouseX;
+            //     circle.y = mouseY;
+            //     }
+            // });
             circles.forEach(circle => {
                 if (circle.isDragging) {
-                circle.x = mouseX;
-                circle.y = mouseY;
+                    circle.x = mouseX;
+                    circle.y = mouseY;
+                }
+            
+                // Check for hover while iterating
+                const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
+                if (distance <= circle.radius) {
+                    // Handle hover logic here, e.g., set isHovered property
+                    circle.isHovered = true;
+                } else {
+                    // If not hovered, clear the isHovered property
+                    circle.isHovered = false;
                 }
             });
-
+            // circles.forEach(circle => {
+            //     const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
+            //     if (distance <= circle.radius) {
+            //         hoveredNode = circle;
+            //     }
+            // });
+        
+            if (hoveredNode) {
+                // Update hover info with node information
+                setHoverInfo({
+                    x: mouseX,
+                    y: mouseY,
+                    content: `Node ID: ${hoveredNode.id}\nNode Name: ${hoveredNode.name}`
+                });
+            } else {
+                // Clear hover info if not hovering over a node
+                setHoverInfo({ x: 0, y: 0, content: '' });
+            }
+        
             draw(canvasContext, canvas, circles, lines);
         };
+        
 
         // Attach event listeners
         canvas.addEventListener('mousedown', handleMouseDown);
@@ -305,6 +345,7 @@ export default function NodeMap() {
 
         // Add mouseout event listener to clear hover state
         canvas.addEventListener('mouseout', () => {
+            setHoverInfo({ x: 0, y: 0, content: '' });
             circles.forEach(circle => {
                 circle.isHovered = false;
             });
@@ -348,6 +389,7 @@ export default function NodeMap() {
             </div>
             {/* Title */}
             <h3 className="text-4xl text-center mb-4"> Node Map </h3>
+            
         
             {/* Canvas */}
             <div className="canvas-container w-4/5 h-3/5 relative">

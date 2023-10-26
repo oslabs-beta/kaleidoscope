@@ -1,0 +1,36 @@
+.hoverBox {
+    position: absolute;
+    background-color: #333; /* Background color of the tooltip */
+    color: #fff; /* Text color */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px; /* Spacing inside the tooltip */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Box shadow for depth */
+  
+    /* Position the tooltip above the node */
+    transform: translate(-50%, -100%);
+    pointer-events: none; /* Allow interactions with elements behind the tooltip */
+  
+    /* Arrow */
+    &::before {
+      content: "";
+      position: absolute;
+      bottom: 100%; /* Position the arrow above the tooltip */
+      left: 50%;
+      margin-left: -5px; /* Center the arrow */
+      border-width: 5px;
+      border-style: solid;
+      border-color: transparent transparent #333 transparent; /* Arrow color */
+    }
+  
+    /* Transition for smooth appearance */
+    transition: opacity 0.2s, transform 0.2s;
+    opacity: 0;
+    transform-origin: 50% 100%;
+  }
+  
+  /* Show the tooltip on hover */
+  .hoverBox:hover {
+    opacity: 1;
+    transform: translate(-50%, -100%) translateY(-10px); /* Add a slight offset to the tooltip for a smoother transition */
+  }
+  
