@@ -1,5 +1,8 @@
 // Component to render the annotation menu
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAnnotations } from '../../features/annotation/annotationSlice';
+import { RootState } from '../../app/store';
 
 function createData(
     node: boolean,
@@ -17,7 +20,11 @@ const rows = [
     createData(true, false, '2021-10-03', 'Node 2', 'This is a node'),
 ];
 
-export const AnnotationMenu = (annotations) => {
+export const AnnotationMenu = () => {
+
+    const annotations = useSelector((state: RootState) => state.annotations);
+    console.log('annotations', annotations);
+
     return (
       <div>
         <table>
@@ -30,14 +37,14 @@ export const AnnotationMenu = (annotations) => {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={row.date}>
+            {annotations.list.map((annotation) => (
+              <tr key={annotation.date}>
                 <td align="left">
-                    {row.node ? "Node" : "Trace"}
+                    {annotation.nodeId ? "Node" : "Trace"} {/* You can modify this based on your actual data structure */}
                 </td>
-                <td align="left">{row.date}</td>
-                <td align="right">{row.title}</td>
-                <td align="right">{row.body}</td>
+                <td align="left">{annotation.annotationDate}</td>
+                <td align="right">{annotation.annotationName}</td>
+                <td align="right">{annotation.annotationBody}</td>
               </tr>
             ))}
           </tbody>
