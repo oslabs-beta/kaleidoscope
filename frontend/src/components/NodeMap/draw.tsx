@@ -20,25 +20,20 @@ const drawLine = (canvasContext, circleA, circleB) => {
 };
 
 export const draw = (canvasContext, canvas, circles:Circle[], lines:Line[]):void | null => {
-    // console.log('draw')
     // clear canvas
     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
 
-    console.log('lines in draw', lines);
     // Draw lines with labels
     lines.forEach(line => {
-        console.log('line', line);
-        // console.log('Check here', circles.find(circle => circle.name === line.from)) 
-        console.log('testing', circles.find(circle => circle.name === line.from))
         const fromCircle: Circle = circles.find(circle => circle.name === line.from);
         const toCircle: Circle = circles.find(circle => circle.name === line.to);
-        console.log('from', fromCircle, '  to', toCircle);
+        
         // Draw line
         drawLine(canvasContext, fromCircle, toCircle);
 
-    // Calculate the midpoint of the line for label positioning
-    const labelX = (fromCircle.x + toCircle.x) / 2;
-    const labelY = (fromCircle.y + toCircle.y) / 2;
+        // Calculate the midpoint of the line for label positioning
+        const labelX = (fromCircle.x + toCircle.x) / 2;
+        const labelY = (fromCircle.y + toCircle.y) / 2;
 
         // Display label
         canvasContext.font = '12px Arial';
