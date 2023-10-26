@@ -12,11 +12,6 @@ export default function NodeMap() {
     // Reference to canvas DOM element
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    // State to manage the circles (nodes) on the canvas
-    let [circles, setCircles] = useState<Circle[]>([]);
-    console.log('rerender', 'circles', circles);
-    let lines = [];
-
     // State to handle saved annotations
     const [annotations, setAnnotations] = useState([]);
     const [showAnnotation, setShowAnnotation] = useState(false);
@@ -25,6 +20,8 @@ export default function NodeMap() {
     const [inAnnotationMode, setInAnnotationMode] = useState(false);
     const [selectedCircle, setSelectedCircle] = useState(null);
     const [selectedLine, setSelectedLine] = useState(null);
+    const [lines, setLines] = useState<Line[]>([]);
+    const [circles, setCircles] = useState<Circle[]>([]);
 
    /* ------------------------------ Helper Functions ------------------------------ */
 
@@ -42,12 +39,8 @@ export default function NodeMap() {
         const getNewNodeMap = async () => {
             let result = await fetch('http://localhost:3001/nodemap'); // fetch goes here
             result = await result.json()
-            console.log('result[0]', result[0])
-            console.log('circles', circles);
             setCircles(result[0]);
-            console.log('circles', circles);
-            // circles= result[0]
-            // lines = result[1]
+            setLines(result[1]);
         }
         getNewNodeMap();
     }, [])
