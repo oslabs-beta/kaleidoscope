@@ -18,12 +18,12 @@ const Home = () => {
     };
 
     return (
-        <div className="flex flex-col items-center h-screen justify-center bg-gray-100">
-            <h1 className="text-4x1 font-semibold mb-8">Kaleidoscope</h1>
+        <div className="flex flex-col items-center h-screen justify-center bg-gradient-to-r from-gray-900 via-slate-800 to-cyan-900">
+            <h1 className="text-4x1 font-semibold mb-8 text-sky-50">Kaleidoscope</h1>
             <div className="mb-4">
                 <label 
                 htmlFor="username" 
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-sky-50"
                 >
                     AWS Access Key ID:
                 </label>
@@ -38,7 +38,7 @@ const Home = () => {
             <div className="mb-4">
                 <label 
                 htmlFor="password" 
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-sky-50"
                 >
                     AWS Secret Access Key:
                 </label>
@@ -53,7 +53,7 @@ const Home = () => {
             <div className="mb-4">
                 <label 
                 htmlFor="password" 
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-sky-50"
                 >
                     Cluster Name:
                 </label>
@@ -68,7 +68,7 @@ const Home = () => {
             <div className="mb-4">
                 <label 
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-sky-50"
                 >
                     Region:
                 </label>
@@ -83,12 +83,12 @@ const Home = () => {
             <div className="mt-6">
                 <button 
                 onClick={handleAWSLogin} 
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="px-4 py-2 bg-blue-400 text-sky-50 rounded-md"
                 >
                     AWS Login
                 </button>
                 <Link to="/viewlogin" className="ml-4">
-                    <button className="px-4 py-2 bg-green-500 text-white rounded-md">View Your Local Cluster</button>
+                    <button className="px-4 py-2 bg-emerald-500 text-white rounded-md">View Your Local Cluster</button>
                 </Link>
             </div>
         </div>
