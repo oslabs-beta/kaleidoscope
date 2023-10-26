@@ -35,7 +35,6 @@ export default function NodeMap() {
 
     // Makes map w/ new nodes and lines
     useEffect(() => {
-        console.log('useEffect triggered');
         const getNewNodeMap = async () => {
             let result = await fetch('http://localhost:3001/nodemap'); // fetch goes here
             result = await result.json()
@@ -128,26 +127,35 @@ export default function NodeMap() {
             draw(canvasContext, canvas, circles, lines);
         };
 
-        // Attach event listeners
-        canvas.addEventListener('mousedown', handleMouseDown);
-        canvas.addEventListener('mouseup', handleMouseUp);
-        canvas.addEventListener('mousemove', handleMouseMove);
-
-        // Add mouseout event listener to clear hover state
-        canvas.addEventListener('mouseout', () => {
+        const handleMouseOut = () => {
             circles.forEach(circle => {
                 circle.isHovered = false;
             });
             draw(canvasContext, canvas, circles, lines);
-        });
+        }
 
-        draw(canvasContext, canvas, circles, lines);
+        const addEventListeners = () => {
+            // Attach event listeners
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseout', handleMouseOut);
+        }
 
-        return () => {
+        const removeEventListeners = () => {
+            // Remove event listeners
             canvas.removeEventListener('mousedown', handleMouseDown);
             canvas.removeEventListener('mouseup', handleMouseUp);
             canvas.removeEventListener('mousemove', handleMouseMove);
+            canvas.removeEventListener('mouseout', handleMouseOut);
+        }
 
+        // Add event listeners
+        addEventListeners();
+        draw(canvasContext, canvas, circles, lines);
+
+        return () => {
+            removeEventListeners();
         };
     }, [circles, lines, inAnnotationMode]);
 
