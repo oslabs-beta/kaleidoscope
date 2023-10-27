@@ -1,7 +1,7 @@
 import { Circle, Line } from '../../types';
 
 // Function to draw circle on canvas
-const drawCircle = (canvasContext, circle) => {
+const drawCircle = (canvasContext: CanvasRenderingContext2D, circle: Circle) => {
     canvasContext.beginPath();
     canvasContext.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
     canvasContext.fillStyle = 'black';
@@ -10,7 +10,7 @@ const drawCircle = (canvasContext, circle) => {
 };
 
 // Function to draw line between circles
-const drawLine = (canvasContext, circleA, circleB) => {
+const drawLine = (canvasContext: CanvasRenderingContext2D, circleA: Circle, circleB: Circle) => {
     canvasContext.beginPath();
     canvasContext.moveTo(circleA.x, circleA.y);
     canvasContext.lineTo(circleB.x, circleB.y);
@@ -19,26 +19,34 @@ const drawLine = (canvasContext, circleA, circleB) => {
     canvasContext.stroke();
 };
 
-export const draw = (canvasContext, canvas, circles:Circle[], lines:Line[]):void | null => {
+export const draw = (
+    canvasContext: CanvasRenderingContext2D, 
+    canvas: HTMLCanvasElement, 
+    circles:Circle[], 
+    lines:Line[]
+):void | null => {
     // clear canvas
     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw lines with labels
     lines.forEach(line => {
-        const fromCircle: Circle = circles.find(circle => circle.name === line.from);
-        const toCircle: Circle = circles.find(circle => circle.name === line.to);
+        const fromCircle = circles.find(circle => circle.name === line.from);
+        const toCircle = circles.find(circle => circle.name === line.to);
         
-        // Draw line
-        drawLine(canvasContext, fromCircle, toCircle);
+        // Draw line if both circles exist
+        if (fromCircle && toCircle) {
+            // Draw line
+            drawLine(canvasContext, fromCircle, toCircle);
 
-        // Calculate the midpoint of the line for label positioning
-        const labelX = (fromCircle.x + toCircle.x) / 2;
-        const labelY = (fromCircle.y + toCircle.y) / 2;
+            // Calculate the midpoint of the line for label positioning
+            const labelX = (fromCircle.x + toCircle.x) / 2;
+            const labelY = (fromCircle.y + toCircle.y) / 2;
 
-        // Display label
-        canvasContext.font = '12px Arial';
-        canvasContext.fillStyle = 'red';
-        canvasContext.fillText(`average latency: ${line.latency}ms requests:${line.requests}`, labelX, labelY);
+            // Display label
+            canvasContext.font = '12px Arial';
+            canvasContext.fillStyle = 'red';
+            canvasContext.fillText(`average latency: ${line.latency}ms requests:${line.requests}`, labelX, labelY);
+        }
     });
 
     // Draw circles and node labels
