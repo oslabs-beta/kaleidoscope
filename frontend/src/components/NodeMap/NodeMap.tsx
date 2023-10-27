@@ -20,8 +20,8 @@ export default function NodeMap() {
     const [showAnnotationMenu, setShowAnnotationMenu] = useState(false);
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [inAnnotationMode, setInAnnotationMode] = useState(false);
-    const [selectedCircle, setSelectedCircle] = useState(null);
-    const [selectedLine, setSelectedLine] = useState(null);
+    const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
+    const [selectedLine, setSelectedLine] = useState<Line | null>(null);
     const [lines, setLines] = useState<Line[]>([]);
     const [circles, setCircles] = useState<Circle[]>([]);
 
@@ -80,6 +80,10 @@ export default function NodeMap() {
                     lines.forEach(line => {
                         const fromCircle = circles.find(circle => circle.name === line.from);
                         const toCircle = circles.find(circle => circle.name === line.to);
+                        if (!fromCircle || !toCircle) {
+                            console.warn("Circle not found for line:", line);
+                            return;
+                        }
                         const slope = (toCircle.y - fromCircle.y) / (toCircle.x - fromCircle.x);
                         const yIntercept = fromCircle.y - slope * fromCircle.x;
                         const distance = Math.abs(slope * mouseX - mouseY + yIntercept) / Math.sqrt(slope ** 2 + 1);
@@ -127,14 +131,22 @@ export default function NodeMap() {
                 }
             });
 
-            draw(canvasContext, canvas, circles, lines);
+            if (canvasContext) {
+                draw(canvasContext, canvas, circles, lines);
+            } else {
+                console.warn("Canvas context is not available");
+            }
         };
 
         const handleMouseOut = () => {
             circles.forEach(circle => {
                 circle.isHovered = false;
             });
-            draw(canvasContext, canvas, circles, lines);
+            if (canvasContext) {
+                draw(canvasContext, canvas, circles, lines);
+            } else {
+                console.warn("Canvas context is not available");
+            }
         }
 
         const addEventListeners = () => {
@@ -155,7 +167,11 @@ export default function NodeMap() {
 
         // Add event listeners
         addEventListeners();
-        draw(canvasContext, canvas, circles, lines);
+        if (canvasContext) {
+            draw(canvasContext, canvas, circles, lines);
+        } else {
+            console.warn("Canvas context is not available");
+        }
 
         return () => {
             removeEventListeners();
@@ -170,7 +186,11 @@ export default function NodeMap() {
                 const canvasContext = canvas.getContext('2d');
                 canvas.width = window.innerWidth * 0.8; // 80% of window width
                 canvas.height = window.innerHeight * 0.6; // 60% of window height
-                draw(canvasContext, canvas, circles, lines);
+                if (canvasContext) {
+                    draw(canvasContext, canvas, circles, lines);
+                } else {
+                    console.warn("Canvas context is not available");
+                }
             }
         };
         
