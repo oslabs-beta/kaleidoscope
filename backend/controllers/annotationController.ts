@@ -1,49 +1,48 @@
-// CREATE TABLE annotation (annotationid int, primary key (annotationid), 
-// title varchar(255), body varchar(255), nodemapid int, foreign key (nodemapid) references nodemap(nodemapid), date DATE)
+import * as annotationModel from '../models/annotationModel';
+import { Request, Response } from 'express'
 
-// CREATE TABLE nodemap (nodemapid int, primary key (nodemapid), annotations int, nodenames varchar(255), 
-// nodex int constraint nodex_range check ( nodex>=0 and nodex<=1200), 
-// nodey int constraint nodey_range check ( nodey>=0 and nodey<=1200), 
-// connecta varchar(255), connectb varchar (255), date DATE, label varchar(255))
+export async function getAnnotations(req: Request, res: Response) {
+    try {
+        const annotations = await annotationModel.getAllAnnotations();
+        res.status(200).json(annotations);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch annotations.' });
+    }
+}
 
-// import db from '../models/annotationModel';
-// import { Request, Response } from 'express'
+export async function createAnnotation(req: Request, res: Response) {
+    try {
+        const newAnnotationId = await annotationModel.addAnnotation(req.body);
+        res.status(201).json({ id: newAnnotationId });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to create annotation.' });
+    }
+}
 
+export async function updateAnnotation(req: Request, res: Response) {
+    try {
+        // ensure that the ID is a number
+        const id = parseInt(req.params.id, 10);
+        if (isNaN(id)) {
+            return res.status(400).send("Invalid ID format");
+        }
+        await annotationModel.updateAnnotation(id, req.body);
+        res.status(204).end();
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to update annotation.' });
+    }
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-export const annotationController = {
-
-
-
-
+export async function deleteAnnotation(req: Request, res: Response) {
+    try {
+        // ensure that the ID is a number
+        const id = parseInt(req.params.id, 10);
+        if (isNaN(id)) {
+            return res.status(400).send("Invalid ID format");
+        }
+        await annotationModel.deleteAnnotation(id);
+        res.status(204).end();
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to delete annotation.' });
+    }
 }
