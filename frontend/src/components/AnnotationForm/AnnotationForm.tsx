@@ -7,7 +7,15 @@ import { useDispatch } from 'react-redux';
 import { addAnnotation } from  '../../features/annotation/annotationSlice';
 import { Annotation } from '../../types';
 
-export const AnnotationForm = ({ x, y, onSave, onCancel }) => {
+interface AnnotationFormProps {
+  onClick: React.MouseEventHandler<HTMLButtonElement>;
+  x: number;
+  y: number;
+  onSave: (annotation: Annotation) => void; 
+  onCancel: React.MouseEventHandler<HTMLButtonElement>;
+}
+
+export const AnnotationForm: React.FC<AnnotationFormProps> = ({ x, y, onSave, onCancel }) => {
   const [annotationName, setName] = useState('');
   const [annotationBody, setBody] = useState('');
   const [annotationDate, setDate] = useState(new Date().toISOString()); // use current date
@@ -18,7 +26,7 @@ export const AnnotationForm = ({ x, y, onSave, onCancel }) => {
 
   console.log('x', x, 'y', y);
   // Function to handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const newAnnotation = {
       annotationName, 
