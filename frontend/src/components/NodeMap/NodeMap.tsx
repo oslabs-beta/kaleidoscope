@@ -5,6 +5,8 @@ import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
 import { Circle, Line, Span } from '../../types';
 import { draw } from './draw';
 
+type NodeMapResponse = [Circle[], Line[]];
+
 // Main NodeMap component
 export default function NodeMap() {
     /* ------------------------------ State Management ------------------------------ */
@@ -37,9 +39,9 @@ export default function NodeMap() {
     useEffect(() => {
         const getNewNodeMap = async () => {
             let result = await fetch('http://localhost:3001/nodemap'); // fetch goes here
-            result = await result.json()
-            setCircles(result[0]);
-            setLines(result[1]);
+            const data: NodeMapResponse = await result.json();
+            setCircles(data[0]);
+            setLines(data[1]);
         }
         getNewNodeMap();
     }, [])
@@ -47,13 +49,15 @@ export default function NodeMap() {
     useEffect(() => {
         // Get spans (trace data) and parse it into circles and lines
         const canvas = canvasRef.current;
-        const canvasContext = canvas.getContext('2d');
 
         // Make sure canvas is defined
         if(!canvas){
             console.log('canvas is undefined')
             return; 
         } 
+
+        // Get canvas context
+        const canvasContext = canvas.getContext('2d');
 
         // Handles mousedown event on the canvas
         const handleMouseDown = (e: MouseEvent) => {
@@ -200,7 +204,7 @@ export default function NodeMap() {
                             setSelectedLine(null);
                             setSelectedCircle(null);
                         }}
-                        onCancel={() => {
+                        onCancel={(e: React.MouseEvent<HTMLButtonElement>) => {
                             setShowAnnotation(false);
                             setSelectedLine(null);
                             setSelectedCircle(null);

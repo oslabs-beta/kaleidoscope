@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAnnotations } from '../../features/annotation/annotationSlice';
 import { RootState } from '../../app/store';
+import { Annotation } from '../../types';
 
 function createData(
     node: boolean,
@@ -37,8 +38,8 @@ export const AnnotationMenu = () => {
             </tr>
           </thead>
           <tbody>
-            {annotations.list.map((annotation) => (
-              <tr key={annotation.date}>
+            {annotations.list.map((annotation: Annotation) => (
+              <tr key={annotation.annotationDate}>
                 <td align="left">
                     {annotation.nodeId ? "Node" : "Trace"} {/* You can modify this based on your actual data structure */}
                 </td>
