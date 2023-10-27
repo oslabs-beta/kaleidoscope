@@ -6,9 +6,6 @@ import nodemapRouter from './routers/nodemapRouter'
 import { initializeDatabase } from './models/annotationModel';
 import annotationRouter from './routers/annotationRouter';
 
-
-
-
 const PORT = 3001;
 
 const app = express();

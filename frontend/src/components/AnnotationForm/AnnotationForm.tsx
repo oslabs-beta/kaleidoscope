@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { CSSProperties } from 'react';
 import { useDispatch } from 'react-redux';
 import { addAnnotation } from  '../../features/annotation/annotationSlice';
+import { saveAnnotation } from '../../services/api';
 import { Annotation } from '../../types';
 
 interface AnnotationFormProps {
@@ -25,7 +26,7 @@ export const AnnotationForm: React.FC<AnnotationFormProps> = ({ x, y, onSave, on
 
   console.log('x', x, 'y', y);
   // Function to handle form submission
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const newAnnotation = {
       annotationName, 
@@ -36,8 +37,15 @@ export const AnnotationForm: React.FC<AnnotationFormProps> = ({ x, y, onSave, on
       x,
       y,
     };
-    dispatch(addAnnotation(newAnnotation));
-    onSave(newAnnotation);
+
+    const response = await saveAnnotation(newAnnotation);
+    console.log('response', response);
+    if (response) {
+      dispatch(addAnnotation(newAnnotation));
+      onSave(newAnnotation);
+    } else {
+      console.log("Failed to save annotation:", response.error);
+    }
   };
   
   // Style for the form. Position it absolutely and set the x/y coordinates based on the props
