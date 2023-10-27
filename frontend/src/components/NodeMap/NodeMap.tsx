@@ -5,6 +5,8 @@ import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
 import { Circle, Line, Span } from '../../types';
 import { draw } from './draw';
 
+type NodeMapResponse = [Circle[], Line[]];
+
 // Main NodeMap component
 export default function NodeMap() {
     /* ------------------------------ State Management ------------------------------ */
@@ -37,9 +39,9 @@ export default function NodeMap() {
     useEffect(() => {
         const getNewNodeMap = async () => {
             let result = await fetch('http://localhost:3001/nodemap'); // fetch goes here
-            result = await result.json()
-            setCircles(result[0]);
-            setLines(result[1]);
+            const data: NodeMapResponse = await result.json();
+            setCircles(data[0]);
+            setLines(data[1]);
         }
         getNewNodeMap();
     }, [])
