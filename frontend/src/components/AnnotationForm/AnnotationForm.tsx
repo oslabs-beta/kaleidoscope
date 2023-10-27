@@ -8,7 +8,6 @@ import { addAnnotation } from  '../../features/annotation/annotationSlice';
 import { Annotation } from '../../types';
 
 interface AnnotationFormProps {
-  onClick: React.MouseEventHandler<HTMLButtonElement>;
   x: number;
   y: number;
   onSave: (annotation: Annotation) => void; 
