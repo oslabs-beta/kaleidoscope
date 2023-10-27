@@ -46,6 +46,7 @@ export default function NodeMap() {
         getNewNodeMap();
     }, [])
     
+    // Draws canvas
     useEffect(() => {
         // Get spans (trace data) and parse it into circles and lines
         const canvas = canvasRef.current;
@@ -178,7 +179,7 @@ export default function NodeMap() {
         };
     }, [circles, lines, inAnnotationMode]);
 
-    //resizing useEffect
+    // Resizes canvas w/ window
     useEffect(() => {
         const updateCanvasSize = () => {
             if (canvasRef.current) {
