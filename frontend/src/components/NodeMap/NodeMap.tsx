@@ -200,7 +200,7 @@ export default function NodeMap() {
                             setSelectedLine(null);
                             setSelectedCircle(null);
                         }}
-                        onCancel={() => {
+                        onCancel={(e: React.MouseEvent<HTMLButtonElement>) => {
                             setShowAnnotation(false);
                             setSelectedLine(null);
                             setSelectedCircle(null);
