@@ -7,7 +7,7 @@
     "start": "cd electron && electron .",
     "start-react": "cd frontend && npm start",
     "start-express": "cd backend && npm start",
-    "start-all": "npm run start-react & npm run start-express & npm start"
+    "start-all": "npm run start-react & npm run start-express"
   },
   "keywords": [],
   "author": "",

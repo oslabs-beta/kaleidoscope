@@ -219,6 +219,7 @@ export default function NodeMap() {
                 <button onClick={toggleAnnotationMode} className="bg-cyan-200 text-cyan-950 p-2 rounded mr-2">
                     {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
                 </button>
+                {/* <label for= "check" class="bg-gray-100 cursor-pointer"/> */}
                 <button onClick={toggleAnnotationMenu} className="bg-cyan-200 text-cyan-950 p-2 rounded">
                     {showAnnotationMenu ? 'Hide Annotation Menu' : 'Show Annotation Menu'}
                 </button>
