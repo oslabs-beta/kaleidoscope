@@ -1,30 +1,45 @@
-const express = require('express');
-const pathModule = require('path');
-const cors = require('cors');
-const nodemapRouter = require('./routers/nodemapRouter.ts')
+import express from 'express';
+import { Request, Response } from 'express'
+import pathModule from 'path';
+import cors from 'cors';
+import nodemapRouter from './routers/nodemapRouter'
+import { initializeDatabase } from './models/annotationModel';
+import annotationRouter from './routers/annotationRouter';
 
-// backend needs to be on a different port than frontend
+
+
+
 const PORT = 3001;
 
 const app = express();
 
-app.use(cors({
-    origin: 'http://localhost:3000',
-}));
+app.use(cors({ origin: 'http://localhost:3000', }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+/* ------------------------------ Routers ------------------------------ */
+
 app.use('/nodemap', nodemapRouter);
 
-app.get('/viewlogin', (req, res) => {
-    console.log('hit view login!')
+app.use('/annotations', annotationRouter);
+
+app.get('/viewlogin', (req: Request, res: Response) => {
     res.status(202);
 });
 
-app.get('/', (req, res) => {
-    console.log('you hit home')
+app.get('/', (req: Request, res: Response) => {
     res.status(201);
 });
+
+/* ------------------------------ Database Setup ------------------------------ */
+
+// Before you start the server:
+async function setup() {
+    await initializeDatabase();
+    console.log("Database initialized.");
+}
+
+setup();
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
