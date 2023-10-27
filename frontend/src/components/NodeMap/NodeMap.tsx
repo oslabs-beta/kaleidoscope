@@ -49,13 +49,15 @@ export default function NodeMap() {
     useEffect(() => {
         // Get spans (trace data) and parse it into circles and lines
         const canvas = canvasRef.current;
-        const canvasContext = canvas.getContext('2d');
 
         // Make sure canvas is defined
         if(!canvas){
             console.log('canvas is undefined')
             return; 
         } 
+
+        // Get canvas context
+        const canvasContext = canvas.getContext('2d');
 
         // Handles mousedown event on the canvas
         const handleMouseDown = (e: MouseEvent) => {
