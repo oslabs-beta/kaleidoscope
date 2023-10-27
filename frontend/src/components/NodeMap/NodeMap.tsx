@@ -235,7 +235,8 @@ export default function NodeMap() {
             </div>
 
             {/* Conditional rendering of AnnotationMenu */}
-            {showAnnotationMenu && <AnnotationMenu />}
+            {// showAnnotationMenu && 
+            <AnnotationMenu />}
             {/* Navigation buttons */}
             <div className="flex justify-center mt-4">
                 <Link to="/" className="mr-2">
