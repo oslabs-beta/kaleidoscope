@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
-import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
 import { Circle, Line, Span } from '../../types';
 import { draw } from './draw';
 import ToggleAnnotationMode  from '../Toggle/Toggle';
-import NewMenu from '../AnnotationMenu/NewAnnotationMenu';
+import AnnotationMenu from '../AnnotationMenu/AnnotationMenu';
 
 type NodeMapResponse = [Circle[], Line[]];
 
@@ -255,7 +254,7 @@ export default function NodeMap() {
                     </button>
                 </div>
                 {/* Conditional rendering of AnnotationMenu */}
-                {showAnnotationMenu && <NewMenu open={showAnnotationMenu} setOpen={setShowAnnotationMenu}/>}
+                {showAnnotationMenu && <AnnotationMenu open={showAnnotationMenu} setOpen={setShowAnnotationMenu}/>}
             </div>
         </div>
     );

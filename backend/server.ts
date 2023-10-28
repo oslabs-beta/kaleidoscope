@@ -3,6 +3,7 @@ import { Request, Response } from 'express'
 import pathModule from 'path';
 import cors from 'cors';
 import nodemapRouter from './routers/nodemapRouter'
+import tracesRouter from './routers/tracesRouter';
 import { initializeDatabase } from './models/annotationModel';
 import annotationRouter from './routers/annotationRouter';
 
@@ -19,6 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/nodemap', nodemapRouter);
 
 app.use('/annotations', annotationRouter);
+
+app.use('/v1/traces', tracesRouter);
 
 app.get('/viewlogin', (req: Request, res: Response) => {
     res.status(202);
