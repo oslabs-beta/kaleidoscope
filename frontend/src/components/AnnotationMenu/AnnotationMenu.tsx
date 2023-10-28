@@ -18,9 +18,9 @@ export const AnnotationMenu = () => {
   console.log('annotations', annotations)
 
     return (
-      <div className="w-3/12 fixed top-0 right-0 overflow-y-auto h-screen p-4 bg-gray-100">
-        <h2 className="text-xl font-bold mb-4">Annotations</h2>
-        <table className="min-w-full divide-y divide-gray-200 shadow rounded-lg">
+      <div className="w-3/12 flex-none top-0 right-0 overflow-y-auto h-screen p-4 bg-slate-800">
+        <h2 className="text-xl text-sky-50 font-bold mb-4">Annotations</h2>
+        <table className="min-w-full divide-y divide-gray-200 shadow rounded-lg bg-gray-900">
           <thead className="bg-gray-300">
             <tr>
               <th className="py-2 px-4">Node or Trace</th>

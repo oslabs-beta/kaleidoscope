@@ -185,8 +185,8 @@ export default function NodeMap() {
             if (canvasRef.current) {
                 const canvas = canvasRef.current;
                 const canvasContext = canvas.getContext('2d');
-                canvas.width = window.innerWidth * 0.8; // 80% of window width
-                canvas.height = window.innerHeight * 0.6; // 60% of window height
+                canvas.width = canvas.clientWidth; 
+                canvas.height = canvas.clientHeight; 
                 if (canvasContext) {
                     draw(canvasContext, canvas, circles, lines);
                 } else {
@@ -211,45 +211,50 @@ export default function NodeMap() {
             {/* Title */}
             <h3 className="text-4xl text-center text-sky-50 mb-4"> Node Map </h3>
         
-            {/* Canvas */}
-            <div className="relative canvas-container w-4/5 h-3/5">
-                <canvas className="relative inset-0 border-solid border-2 border-gray-600 rounded-md w-full h-full" ref={canvasRef} />
-                {/* Conditional rendering of AnnotationForm */}
-                {showAnnotation && (selectedCircle || selectedLine) && 
-                    <AnnotationForm
-                        x={position.x}
-                        y={position.y}
-                        onSave={(annotationText) => {
-                            console.log('Annotation saved: ', annotationText);
-                            setShowAnnotation(false);
-                            setSelectedLine(null);
-                            setSelectedCircle(null);
-                        }}
-                        onCancel={(e: React.MouseEvent<HTMLButtonElement>) => {
-                            setShowAnnotation(false);
-                            setSelectedLine(null);
-                            setSelectedCircle(null);
-                        }}
-                    />
-                }
+            {/* Canvas and Buttons container */}
+            <div className="flex flex-col h-full w-full justify-between">
+                <div className="flex w-full overflow-y-auto">
+                    <div className="relative canvas-container flex-grow p-8">
+                        <canvas className="relative inset-0 border-solid border-2 border-gray-600 rounded-md w-full h-full" ref={canvasRef} />
+                        {/* Conditional rendering of AnnotationForm */}
+                        {showAnnotation && (selectedCircle || selectedLine) && 
+                            <AnnotationForm
+                                x={position.x}
+                                y={position.y}
+                                onSave={(annotationText) => {
+                                    console.log('Annotation saved: ', annotationText);
+                                    setShowAnnotation(false);
+                                    setSelectedLine(null);
+                                    setSelectedCircle(null);
+                                }}
+                                onCancel={(e: React.MouseEvent<HTMLButtonElement>) => {
+                                    setShowAnnotation(false);
+                                    setSelectedLine(null);
+                                    setSelectedCircle(null);
+                                }}
+                            />
+                        }
+                    </div>
+
+                    {/* Conditional rendering of AnnotationMenu */}
+                    {showAnnotationMenu && <AnnotationMenu />}
+                </div>
+
+                {/* Navigation buttons */}
+                <div className="flex justify-center mb-4 mt-2">
+                    <Link to="/" className="mr-2">
+                        <button className="bg-cyan-950 text-sky-50 p-2 rounded">Go Back</button>
+                    </Link>
+                    <button onClick={toggleAnnotationMode} className="bg-cyan-200 text-cyan-950 p-2 rounded mr-2">
+                        {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
+                    </button>
+                    {/* <label for= "check" class="bg-gray-100 cursor-pointer"/> */}
+                    <button onClick={toggleAnnotationMenu} className="bg-cyan-200 text-cyan-950 p-2 rounded">
+                        {showAnnotationMenu ? 'Hide Annotation Menu' : 'Show Annotation Menu'}
+                    </button>
+                </div>
             </div>
 
-            {/* Conditional rendering of AnnotationMenu */}
-            {// showAnnotationMenu && 
-            <AnnotationMenu />}
-            {/* Navigation buttons */}
-            <div className="flex justify-center mt-4">
-                <Link to="/" className="mr-2">
-                    <button className="bg-cyan-950 text-sky-50 p-2 rounded">Go Back</button>
-                </Link>
-                <button onClick={toggleAnnotationMode} className="bg-cyan-200 text-cyan-950 p-2 rounded mr-2">
-                    {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
-                </button>
-                {/* <label for= "check" class="bg-gray-100 cursor-pointer"/> */}
-                <button onClick={toggleAnnotationMenu} className="bg-cyan-200 text-cyan-950 p-2 rounded">
-                    {showAnnotationMenu ? 'Hide Annotation Menu' : 'Show Annotation Menu'}
-                </button>
-            </div>
         </div>
     );
 }
