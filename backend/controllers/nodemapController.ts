@@ -3,20 +3,27 @@ const fs = require('fs');
 import { Circle, Line, Span } from '../types';
 
 const getSpans = (req, res, next) => {
-    console.log('in the middleware...')
+    // console.log('in the middleware...')
     res.locals.spans = JSON.parse(fs.readFileSync('sampletracedata.json').toString()) //test data
     return next();
 }
 
 const makeNodes = async (req, res, next) => {
     // Get spans (trace data) and parse it into circles and lines
-  
+        let { width, screenwidth, height, screenheight } = req.params;
+        width = Number(width.replace(':', ''));
+        screenwidth = Number(screenwidth.replace(':', ''));
+        height = Number(height.replace(':', ''));
+        screenheight = Number(screenheight.replace(':', ''));
+        let counter = 0
+        // console.log('width', width, 'screenwidth', screenwidth);
+        // console.log('height', height, 'screenheight', screenheight);
+
         const spans:{spans:Span[]} = res.locals.spans;
         const defaultNodeRadius = 20;
         const endpoints = {};
         const nodes:Circle[] = [];
         const lines:Line[] = [];
-        let counter = 0
         spans.spans.forEach(span => {
             //check if we need to create a new node/circle; create if so
             if(!endpoints[span.attributes['http.route']]){ //if endpoint is not yet in our nodes
@@ -24,8 +31,8 @@ const makeNodes = async (req, res, next) => {
                 nodes.push({
                     name: span.attributes['http.route'],
                     id: span.context.span_id,
-                    x: counter * 20, 
-                    y: counter * 20,
+                    x: Math.ceil(Math.random() * (width)) + 20,
+                    y: Math.ceil(Math.random() * (height)) + 20,
                     radius: defaultNodeRadius,
                     isDragging: false,
                     isHovered: false, 
@@ -42,6 +49,7 @@ const makeNodes = async (req, res, next) => {
                 if(parent){ 
                     const time1:Date | any = new Date(span.end_time)
                     const time2:Date | any = new Date(span.start_time)
+                    // console.log('time1', time1, 'time2', time2, 'latency', time1.getTime() - time2.getTime());
                     //check for an exisiting line / incorporate latency
                     const line:Line|undefined = lines.find((l) => l.from === parent.name && l.to === span.attributes['http.route']);
                     if(line) {

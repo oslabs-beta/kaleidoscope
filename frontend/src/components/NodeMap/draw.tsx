@@ -38,7 +38,12 @@ export const draw = (canvasContext, canvas, circles:Circle[], lines:Line[]):void
         // Display label
         canvasContext.font = '12px Arial';
         canvasContext.fillStyle = 'red';
-        canvasContext.fillText(`average latency: ${line.latency}ms requests:${line.requests}`, labelX, labelY);
+        canvasContext.fillText(
+            `avg latency: ${line.latency}ms`, 
+        labelX, labelY);
+        canvasContext.fillText(
+            `requests: ${line.requests}`, 
+        labelX, labelY - 12);
     });
 
     // Draw circles and node labels

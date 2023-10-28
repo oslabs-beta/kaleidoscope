@@ -36,7 +36,9 @@ export default function NodeMap() {
     // Makes map w/ new nodes and lines
     useEffect(() => {
         const getNewNodeMap = async () => {
-            let result = await fetch('http://localhost:3001/nodemap'); // fetch goes here
+            // console.log(canvasRef.current.width);
+            // console.log(window.screen.availWidth)
+            let result = await fetch(`http://localhost:3001/nodemap/:${canvasRef.current.width}&:${window.screen.availWidth}&:${canvasRef.current.height}&:${window.screen.availHeight}`); // fetch goes here
             result = await result.json()
             setCircles(result[0]);
             setLines(result[1]);
