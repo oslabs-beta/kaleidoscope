@@ -4,6 +4,8 @@ import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
 import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
 import { Circle, Line, Span } from '../../types';
 import { draw } from './draw';
+import ToggleAnnotationMode  from '../Toggle/Toggle';
+import NewMenu from '../AnnotationMenu/NewAnnotationMenu';
 
 type NodeMapResponse = [Circle[], Line[]];
 
@@ -204,57 +206,57 @@ export default function NodeMap() {
     }, []);
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-gray-900 via-slate-800 to-cyan-900">
-            <div>
-                In Annotation Mode: {inAnnotationMode.toString()}
-            </div>
-            {/* Title */}
-            <h3 className="text-4xl text-center text-sky-50 mb-4"> Node Map </h3>
-        
+        <div>
             {/* Canvas and Buttons container */}
-            <div className="flex flex-col h-full w-full justify-between">
-                <div className="flex w-full overflow-y-auto">
-                    <div className="relative canvas-container flex-grow p-8">
-                        <canvas className="relative inset-0 border-solid border-2 border-gray-600 rounded-md w-full h-full" ref={canvasRef} />
-                        {/* Conditional rendering of AnnotationForm */}
-                        {showAnnotation && (selectedCircle || selectedLine) && 
-                            <AnnotationForm
-                                x={position.x}
-                                y={position.y}
-                                onSave={(annotationText) => {
-                                    console.log('Annotation saved: ', annotationText);
-                                    setShowAnnotation(false);
-                                    setSelectedLine(null);
-                                    setSelectedCircle(null);
-                                }}
-                                onCancel={(e: React.MouseEvent<HTMLButtonElement>) => {
-                                    setShowAnnotation(false);
-                                    setSelectedLine(null);
-                                    setSelectedCircle(null);
-                                }}
-                            />
-                        }
-                    </div>
-
-                    {/* Conditional rendering of AnnotationMenu */}
-                    {showAnnotationMenu && <AnnotationMenu />}
+            <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow m-4">
+                <div className="px-4 py-5 sm:px-6 text-center text-4xl font-semibold">
+                    Node Map
                 </div>
-
-                {/* Navigation buttons */}
-                <div className="flex justify-center mb-4 mt-2">
-                    <Link to="/" className="mr-2">
-                        <button className="bg-cyan-950 text-sky-50 p-2 rounded">Go Back</button>
+                <div className="px-4 py-5 sm:p-6 relative">
+                    <canvas className="border w-full h-[500px]" ref={canvasRef} />
+                    {/* Conditional rendering of AnnotationForm */}
+                    {showAnnotation && (selectedCircle || selectedLine) && 
+                        <AnnotationForm
+                            x={position.x}
+                            y={position.y}
+                            onSave={(annotationText) => {
+                                console.log('Annotation saved: ', annotationText);
+                                setShowAnnotation(false);
+                                setSelectedLine(null);
+                                setSelectedCircle(null);
+                            }}
+                            onCancel={(e: React.MouseEvent<HTMLButtonElement>) => {
+                                setShowAnnotation(false);
+                                setSelectedLine(null);
+                                setSelectedCircle(null);
+                            }}
+                        />
+                    }
+                </div>
+                <div className="text-center bg-gray-50 px-4 py-4 sm:px-6 flex justify-center space-x-4">
+                    {/* Navigation buttons */}
+                    <Link to="/" >
+                        <button
+                            type="button"
+                            className="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                        >
+                            Go Back
+                        </button>
                     </Link>
-                    <button onClick={toggleAnnotationMode} className="bg-cyan-200 text-cyan-950 p-2 rounded mr-2">
-                        {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
+                    <button onClick={toggleAnnotationMode} className="flex flex-col items-center">
+                        <ToggleAnnotationMode />
                     </button>
-                    {/* <label for= "check" class="bg-gray-100 cursor-pointer"/> */}
-                    <button onClick={toggleAnnotationMenu} className="bg-cyan-200 text-cyan-950 p-2 rounded">
+                    <button
+                        onClick={() => setShowAnnotationMenu(prev => !prev)}
+                        type="button"
+                        className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
                         {showAnnotationMenu ? 'Hide Annotation Menu' : 'Show Annotation Menu'}
                     </button>
                 </div>
+                {/* Conditional rendering of AnnotationMenu */}
+                {showAnnotationMenu && <NewMenu open={showAnnotationMenu} setOpen={setShowAnnotationMenu}/>}
             </div>
-
         </div>
     );
 }
