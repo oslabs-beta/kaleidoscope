@@ -47,7 +47,7 @@ const annotationSlice = createSlice({
         });
         builder.addCase(fetchAnnotations.fulfilled, (state, action) => {
             state.status = 'succeeded';
-            state.list = state.list.concat(action.payload);
+            state.list = action.payload;
         });
         builder.addCase(fetchAnnotations.rejected, (state, action) => {
             state.status = 'failed';
