@@ -46,3 +46,4 @@ export interface Annotation {
     x: number;
     y: number;
 }
+
