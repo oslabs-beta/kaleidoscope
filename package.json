@@ -7,7 +7,9 @@
     "start": "cd electron && electron .",
     "start-react": "cd frontend && npm start",
     "start-express": "cd backend && npm start",
-    "start-all": "npm run start-react & npm run start-express"
+    "start-express-dev": "cd backend && npm run dev",
+    "start-all": "npm run start-react & npm run start-express",
+    "start-dev": "npm run start-react & npm run start-express-dev"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +20,7 @@
     "@fontsource/roboto": "^5.0.8",
     "@headlessui/react": "^1.7.17",
     "@reduxjs/toolkit": "^1.9.7",
+    "@tailwindcss/forms": "^0.5.6",
     "@types/pg": "^8.10.7",
     "@types/react": "^18.2.31",
     "@types/react-dom": "^18.2.14",
@@ -48,6 +51,7 @@
     "webpack-dev-server": "^4.15.1"
   },
   "devDependencies": {
+    "@types/file-loader": "^5.0.3",
     "@types/node": "^20.8.7",
     "@types/react-redux": "^7.1.16",
     "electron-devtools-installer": "^3.2.0",

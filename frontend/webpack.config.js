@@ -27,7 +27,9 @@ module.exports = (env, argv) => {
         test: /\.(png|jpe?g|gif|jp2|webp)$/,
         loader: 'file-loader',
         options: {
-        name: 'images/[name].[ext]'
+            name: 'images/[name].[ext]',
+            outputpath: 'assets/',
+            publicpath: 'assets/'
     },
     },
     {
