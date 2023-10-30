@@ -11,13 +11,36 @@ const getSpans = (req: Request, res: Response, next: NextFunction) => {
 
 const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
     // Get spans (trace data) and parse it into circles and lines
-        const width:any = Number(req.params.width.replace(':', ''));
-        const screenwidth:Number = Number(req.params.screenwidth.replace(':', ''));
-        const height:any = Number(req.params.height.replace(':', ''));
-        const screenheight:Number = Number(req.params.screenheight.replace(':', ''));
-        let counter = 0
+        const width:number = Number(req.params.width.replace(':', ''));
+        //const screenwidth:Number = Number(req.params.screenwidth.replace(':', ''));
+        const height:number = Number(req.params.height.replace(':', ''));
+        //const screenheight:Number = Number(req.params.screenheight.replace(':', ''));
         // console.log('width', width, 'screenwidth', screenwidth);
         // console.log('height', height, 'screenheight', screenheight);
+
+        const border:number = 50; //hardcoded minimum seperation between nodes / edges of the canvas
+        const positions:{x:number, y:number}[] = []; //store previously used positions to enforce uniqueness
+        const randomPOS = (w:number, h:number):number[] => {
+            const random = (num:number):number => {
+                const result = Math.ceil(Math.random() * num)
+                if(result < border || result > num - border){ 
+                    //recalculate unacceptable locations according to border variable
+                    return random(num);
+                }else return result;
+            }
+
+            const width = random(w);
+            const height = random(h)
+            for(const pos of positions){
+                const distance = Math.sqrt((width - pos.x)) ** 2 + (height - pos.y) ** 2;
+                if(distance < border) {
+                    return randomPOS(w, h);
+                    //recalculate unacceptable locations according to border variable
+                }
+            }
+            return [width, height]
+        }
+
 
         const spans:{spans:Span[]} = res.locals.spans;
         const defaultNodeRadius = 20;
@@ -27,12 +50,12 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
         spans.spans.forEach(span => {
             //check if we need to create a new node/circle; create if so
             if(!endpoints[span.attributes['http.route']]){ //if endpoint is not yet in our nodes
-                counter++;
+                const [x, y] = randomPOS(width, height); //generate a position for the new node
                 nodes.push({
                     name: span.attributes['http.route'],
                     id: span.context.span_id,
-                    x: Math.ceil(Math.random() * (width)) + 20,
-                    y: Math.ceil(Math.random() * (height)) + 20,
+                    x: x,
+                    y: y,
                     radius: defaultNodeRadius,
                     isDragging: false,
                     isHovered: false, 
