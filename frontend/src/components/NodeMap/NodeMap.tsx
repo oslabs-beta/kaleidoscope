@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
-import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
 import { Circle, Line, Span } from '../../types';
 import { draw } from './draw';
+import ToggleAnnotationMode  from '../Toggle/Toggle';
+import AnnotationMenu from '../AnnotationMenu/AnnotationMenu';
+
+type NodeMapResponse = [Circle[], Line[]];
 
 // Main NodeMap component
 export default function NodeMap() {
@@ -18,8 +21,8 @@ export default function NodeMap() {
     const [showAnnotationMenu, setShowAnnotationMenu] = useState(false);
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [inAnnotationMode, setInAnnotationMode] = useState(false);
-    const [selectedCircle, setSelectedCircle] = useState(null);
-    const [selectedLine, setSelectedLine] = useState(null);
+    const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
+    const [selectedLine, setSelectedLine] = useState<Line | null>(null);
     const [lines, setLines] = useState<Line[]>([]);
     const [circles, setCircles] = useState<Circle[]>([]);
 
@@ -37,23 +40,26 @@ export default function NodeMap() {
     useEffect(() => {
         const getNewNodeMap = async () => {
             let result = await fetch('http://localhost:3001/nodemap'); // fetch goes here
-            result = await result.json()
-            setCircles(result[0]);
-            setLines(result[1]);
+            const data: NodeMapResponse = await result.json();
+            setCircles(data[0]);
+            setLines(data[1]);
         }
         getNewNodeMap();
     }, [])
     
+    // Draws canvas
     useEffect(() => {
         // Get spans (trace data) and parse it into circles and lines
         const canvas = canvasRef.current;
-        const canvasContext = canvas.getContext('2d');
 
         // Make sure canvas is defined
         if(!canvas){
             console.log('canvas is undefined')
             return; 
         } 
+
+        // Get canvas context
+        const canvasContext = canvas.getContext('2d');
 
         // Handles mousedown event on the canvas
         const handleMouseDown = (e: MouseEvent) => {
@@ -76,6 +82,10 @@ export default function NodeMap() {
                     lines.forEach(line => {
                         const fromCircle = circles.find(circle => circle.name === line.from);
                         const toCircle = circles.find(circle => circle.name === line.to);
+                        if (!fromCircle || !toCircle) {
+                            console.warn("Circle not found for line:", line);
+                            return;
+                        }
                         const slope = (toCircle.y - fromCircle.y) / (toCircle.x - fromCircle.x);
                         const yIntercept = fromCircle.y - slope * fromCircle.x;
                         const distance = Math.abs(slope * mouseX - mouseY + yIntercept) / Math.sqrt(slope ** 2 + 1);
@@ -123,14 +133,22 @@ export default function NodeMap() {
                 }
             });
 
-            draw(canvasContext, canvas, circles, lines);
+            if (canvasContext) {
+                draw(canvasContext, canvas, circles, lines);
+            } else {
+                console.warn("Canvas context is not available");
+            }
         };
 
         const handleMouseOut = () => {
             circles.forEach(circle => {
                 circle.isHovered = false;
             });
-            draw(canvasContext, canvas, circles, lines);
+            if (canvasContext) {
+                draw(canvasContext, canvas, circles, lines);
+            } else {
+                console.warn("Canvas context is not available");
+            }
         }
 
         const addEventListeners = () => {
@@ -151,22 +169,30 @@ export default function NodeMap() {
 
         // Add event listeners
         addEventListeners();
-        draw(canvasContext, canvas, circles, lines);
+        if (canvasContext) {
+            draw(canvasContext, canvas, circles, lines);
+        } else {
+            console.warn("Canvas context is not available");
+        }
 
         return () => {
             removeEventListeners();
         };
     }, [circles, lines, inAnnotationMode]);
 
-    //resizing useEffect
+    // Resizes canvas w/ window
     useEffect(() => {
         const updateCanvasSize = () => {
             if (canvasRef.current) {
                 const canvas = canvasRef.current;
                 const canvasContext = canvas.getContext('2d');
-                canvas.width = window.innerWidth * 0.8; // 80% of window width
-                canvas.height = window.innerHeight * 0.6; // 60% of window height
-                draw(canvasContext, canvas, circles, lines);
+                canvas.width = canvas.clientWidth; 
+                canvas.height = canvas.clientHeight; 
+                if (canvasContext) {
+                    draw(canvasContext, canvas, circles, lines);
+                } else {
+                    console.warn("Canvas context is not available");
+                }
             }
         };
         
@@ -179,49 +205,56 @@ export default function NodeMap() {
     }, []);
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-gray-900 via-slate-800 to-cyan-900">
-            <div>
-                In Annotation Mode: {inAnnotationMode.toString()}
-            </div>
-            {/* Title */}
-            <h3 className="text-4xl text-center text-sky-50 mb-4"> Node Map </h3>
-        
-            {/* Canvas */}
-            <div className="relative canvas-container w-4/5 h-3/5">
-                <canvas className="relative inset-0 border-solid border-2 border-gray-600 rounded-md w-full h-full" ref={canvasRef} />
-                {/* Conditional rendering of AnnotationForm */}
-                {showAnnotation && (selectedCircle || selectedLine) && 
-                    <AnnotationForm
-                        x={position.x}
-                        y={position.y}
-                        onSave={(annotationText) => {
-                            console.log('Annotation saved: ', annotationText);
-                            setShowAnnotation(false);
-                            setSelectedLine(null);
-                            setSelectedCircle(null);
-                        }}
-                        onCancel={() => {
-                            setShowAnnotation(false);
-                            setSelectedLine(null);
-                            setSelectedCircle(null);
-                        }}
-                    />
-                }
-            </div>
-
-            {/* Conditional rendering of AnnotationMenu */}
-            {showAnnotationMenu && <AnnotationMenu />}
-            {/* Navigation buttons */}
-            <div className="flex justify-center mt-4">
-                <Link to="/" className="mr-2">
-                    <button className="bg-cyan-950 text-sky-50 p-2 rounded">Go Back</button>
-                </Link>
-                <button onClick={toggleAnnotationMode} className="bg-cyan-200 text-cyan-950 p-2 rounded mr-2">
-                    {inAnnotationMode ? 'Exit Annotation Mode' : 'Create Annotation'}
-                </button>
-                <button onClick={toggleAnnotationMenu} className="bg-cyan-200 text-cyan-950 p-2 rounded">
-                    {showAnnotationMenu ? 'Hide Annotation Menu' : 'Show Annotation Menu'}
-                </button>
+        <div>
+            {/* Canvas and Buttons container */}
+            <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow m-4">
+                <div className="px-4 py-5 sm:px-6 text-center text-4xl font-semibold">
+                    Node Map
+                </div>
+                <div className="px-4 py-5 sm:p-6 relative">
+                    <canvas className="border w-full h-[500px]" ref={canvasRef} />
+                    {/* Conditional rendering of AnnotationForm */}
+                    {showAnnotation && (selectedCircle || selectedLine) && 
+                        <AnnotationForm
+                            x={position.x}
+                            y={position.y}
+                            onSave={(annotationText) => {
+                                console.log('Annotation saved: ', annotationText);
+                                setShowAnnotation(false);
+                                setSelectedLine(null);
+                                setSelectedCircle(null);
+                            }}
+                            onCancel={(e: React.MouseEvent<HTMLButtonElement>) => {
+                                setShowAnnotation(false);
+                                setSelectedLine(null);
+                                setSelectedCircle(null);
+                            }}
+                        />
+                    }
+                </div>
+                <div className="text-center bg-gray-50 px-4 py-4 sm:px-6 flex justify-center space-x-4">
+                    {/* Navigation buttons */}
+                    <Link to="/" >
+                        <button
+                            type="button"
+                            className="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                        >
+                            Go Back
+                        </button>
+                    </Link>
+                    <button onClick={toggleAnnotationMode} className="flex flex-col items-center">
+                        <ToggleAnnotationMode />
+                    </button>
+                    <button
+                        onClick={() => setShowAnnotationMenu(prev => !prev)}
+                        type="button"
+                        className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
+                        {showAnnotationMenu ? 'Hide Annotation Menu' : 'Show Annotation Menu'}
+                    </button>
+                </div>
+                {/* Conditional rendering of AnnotationMenu */}
+                {showAnnotationMenu && <AnnotationMenu open={showAnnotationMenu} setOpen={setShowAnnotationMenu}/>}
             </div>
         </div>
     );
