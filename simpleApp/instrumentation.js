@@ -1,8 +1,7 @@
 /*instrumentation.js*/
 // Require dependencies
 const { NodeSDK } = require('@opentelemetry/sdk-node');
-const { OtlpHttpSpanExporter } = require('@opentelemetry/exporter-trace-otlp-http');
-console.log(OtlpHttpSpanExporter);
+const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-http');
 const { ConsoleSpanExporter } = require('@opentelemetry/sdk-trace-node');
 const {
   getNodeAutoInstrumentations,
@@ -13,8 +12,8 @@ const {
 } = require('@opentelemetry/sdk-metrics');
 
 const sdk = new NodeSDK({
-  traceExporter: new OtlpHttpSpanExporter({
-    endpoint: 'http://localhost:4317',
+  traceExporter: new OTLPTraceExporter({
+    endpoint: 'http://localhost:4318/v1/traces',
   }),
   metricReader: new PeriodicExportingMetricReader({
     exporter: new ConsoleMetricExporter(),
