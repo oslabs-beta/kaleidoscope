@@ -36,24 +36,11 @@ export default function NodeMap() {
 
         /* ------------------------------ The useEffect Zone------------------------------ */
 
-    // Makes map w/ new nodes and lines
-    useEffect(() => {
-        const width = (canvasRef.current) ? canvasRef.current.width : 300;
-        const height = (canvasRef.current) ? canvasRef.current.height : 150;
-
-        const getNewNodeMap = async () => {
-            let result = await fetch(`http://localhost:3001/nodemap/:${width}&:${window.screen.availWidth}&:${height}&:${window.screen.availHeight}`); // fetch goes here
-            const data: NodeMapResponse = await result.json();
-            setCircles(data[0]);
-            setLines(data[1]);
-        }
-        getNewNodeMap();
-    }, [])
-    
     // Draws canvas
     useEffect(() => {
         // Get spans (trace data) and parse it into circles and lines
         const canvas: HTMLCanvasElement | null = canvasRef.current;
+        // console.log(canvasRef.current)
 
         // Make sure canvas is defined
         if(!canvas){
@@ -211,6 +198,20 @@ export default function NodeMap() {
             window.removeEventListener('resize', updateCanvasSize);
         };
     }, []);
+
+    // Makes map w/ new nodes and lines
+    useEffect(() => {
+        const width = (canvasRef.current) ? canvasRef.current.width : 300;
+        const height = (canvasRef.current) ? canvasRef.current.height : 150;
+
+        const getNewNodeMap = async () => {
+            let result = await fetch(`http://localhost:3001/nodemap/:${width}&:${window.screen.availWidth}&:${height}&:${window.screen.availHeight}`); // fetch goes here
+            const data: NodeMapResponse = await result.json();
+            setCircles(data[0]);
+            setLines(data[1]);
+        }
+        getNewNodeMap();
+    }, [])
 
     return (
         <div>
