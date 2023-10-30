@@ -4,7 +4,7 @@ const nodemapController = require('../controllers/nodemapController.ts');
 const router = Router()
 import { Request, Response } from 'express'
 
-router.get('*', nodemapController.getSpans, nodemapController.makeNodes, (req: Request, res: Response) => {
+router.get('/:width&:screenwidth&:height&:screenheight', nodemapController.getSpans, nodemapController.makeNodes, (req:Request, res:Response) => {
     res.status(203).json(res.locals.nodes);
 });
 
