@@ -11,11 +11,32 @@ const drawCircle = (canvasContext: CanvasRenderingContext2D, circle: Circle) => 
 
 // Function to draw line between circles
 const drawLine = (canvasContext: CanvasRenderingContext2D, circleA: Circle, circleB: Circle) => {
+    //line from circleA to circleB
     canvasContext.beginPath();
     canvasContext.moveTo(circleA.x, circleA.y);
     canvasContext.lineTo(circleB.x, circleB.y);
     canvasContext.strokeStyle = 'dark-gray';
     canvasContext.lineWidth = 2;
+    canvasContext.stroke();
+
+    //tip of the arrow
+    const arrowSize = 15;
+
+    const dx = circleB.x - circleA.x;
+    const dy = circleB.y - circleA.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const unitDx = dx / length;
+    const unitDy = dy / length;
+
+    const arrowX = circleB.x - unitDx * 20;
+    const arrowY = circleB.y - unitDy * 20;
+
+    const angle = Math.atan2(circleB.y - circleA.y, circleB.x - circleA.x);
+    canvasContext.beginPath();
+    canvasContext.moveTo(arrowX, arrowY);
+    canvasContext.lineTo(arrowX - arrowSize * Math.cos(angle - Math.PI / 6), arrowY - arrowSize * Math.sin(angle - Math.PI / 6));
+    canvasContext.moveTo(arrowX, arrowY);
+    canvasContext.lineTo(arrowX - arrowSize * Math.cos(angle + Math.PI / 6), arrowY - arrowSize * Math.sin(angle + Math.PI / 6));
     canvasContext.stroke();
 };
 
@@ -42,10 +63,15 @@ export const draw = (
             const labelX = (fromCircle.x + toCircle.x) / 2;
             const labelY = (fromCircle.y + toCircle.y) / 2;
 
-            // Display label
-            canvasContext.font = '12px Arial';
-            canvasContext.fillStyle = 'red';
-            canvasContext.fillText(`average latency: ${line.latency}ms requests:${line.requests}`, labelX, labelY);
+        // Display label
+        canvasContext.font = '12px Arial';
+        canvasContext.fillStyle = 'red';
+        canvasContext.fillText(
+            `avg latency: ${line.latency}ms`, 
+        labelX, labelY);
+        canvasContext.fillText(
+            `requests: ${line.requests}`, 
+        labelX, labelY - 12);
         }
     });
 
