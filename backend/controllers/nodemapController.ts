@@ -1,27 +1,27 @@
 const db = require('../models/annotationModel.ts');
 const fs = require('fs');
 import { Circle, Line, Span } from '../types';
+import { Request, Response, NextFunction } from 'express'
 
-const getSpans = (req, res, next) => {
+const getSpans = (req: Request, res: Response, next: NextFunction) => {
     // console.log('in the middleware...')
     res.locals.spans = JSON.parse(fs.readFileSync('sampletracedata.json').toString()) //test data
     return next();
 }
 
-const makeNodes = async (req, res, next) => {
+const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
     // Get spans (trace data) and parse it into circles and lines
-        let { width, screenwidth, height, screenheight } = req.params;
-        width = Number(width.replace(':', ''));
-        screenwidth = Number(screenwidth.replace(':', ''));
-        height = Number(height.replace(':', ''));
-        screenheight = Number(screenheight.replace(':', ''));
+        const width:Number = Number(req.params.width.replace(':', ''));
+        const screenwidth:Number = Number(req.params.screenwidth.replace(':', ''));
+        const height:Number = Number(req.params.height.replace(':', ''));
+        const screenheight:Number = Number(req.params.screenheight.replace(':', ''));
         let counter = 0
         // console.log('width', width, 'screenwidth', screenwidth);
         // console.log('height', height, 'screenheight', screenheight);
 
         const spans:{spans:Span[]} = res.locals.spans;
         const defaultNodeRadius = 20;
-        const endpoints = {};
+        const endpoints:{ [key: string]: any }  = {};
         const nodes:Circle[] = [];
         const lines:Line[] = [];
         spans.spans.forEach(span => {
