@@ -30,10 +30,16 @@ const router = createBrowserRouter([
 ]);
 
 // Create a React root attached to the DOM element with id 'root'
-const root = ReactDOM.createRoot(document.getElementById('root'));
-// Render the app within RouterProvider to enable routing
-root.render(
-  <Provider store={store}>   
-      <RouterProvider router={router} />
-  </Provider>
-);
+const rootElement = document.getElementById('root');
+if (rootElement) {
+    const root = ReactDOM.createRoot(rootElement);
+    // Render the app within RouterProvider to enable routing
+    root.render(
+      <Provider store={store}>   
+          <RouterProvider router={router} />
+      </Provider>
+    );
+} else {
+    console.error("Element with ID 'root' not found in the document.");
+}
+

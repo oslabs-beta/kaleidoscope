@@ -1,47 +1,63 @@
-// Component to render the annotation menu
-import React, { useState } from 'react';
+import React, { SetStateAction, Dispatch } from 'react';
+import { Fragment, useState } from 'react'
+import { Dialog, Transition } from '@headlessui/react'
+import { XMarkIcon } from '@heroicons/react/24/outline'
+import  AnnotationTable  from './AnnotationTable';
 
-function createData(
-    node: boolean,
-    trace: boolean,
-    date: string,
-    title: string,
-    body: string
-) {
-    return { node, trace, date, title, body };
+type Props = {
+    open: boolean;
+    setOpen: Dispatch<SetStateAction<boolean>>;
+};
+
+export default function AnnotationMenu({ open, setOpen }: Props) {
+
+  return (
+    <Transition.Root show={open} as={Fragment}>
+      <Dialog as="div" className="relative z-10" onClose={setOpen}>
+        <div className="fixed inset-0" />
+
+        <div className="fixed inset-0 overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+              <Transition.Child
+                as={Fragment}
+                enter="transform transition ease-in-out duration-500 sm:duration-700"
+                enterFrom="translate-x-full"
+                enterTo="translate-x-0"
+                leave="transform transition ease-in-out duration-500 sm:duration-700"
+                leaveFrom="translate-x-0"
+                leaveTo="translate-x-full"
+              >
+                <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
+                  <div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
+                    <div className="px-4 sm:px-6">
+                      <div className="flex items-start justify-between">
+                        <Dialog.Title className="text-base font-semibold leading-6 text-gray-900">
+                          Saved Annotations
+                        </Dialog.Title>
+                        <div className="ml-3 flex h-7 items-center">
+                          <button
+                            type="button"
+                            className="relative rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            onClick={() => setOpen(false)}
+                          >
+                            <span className="absolute -inset-2.5" />
+                            <span className="sr-only">Close panel</span>
+                            <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="relative mt-6 flex-1 px-4 sm:px-6">
+                        <AnnotationTable />
+                    </div>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </div>
+      </Dialog>
+    </Transition.Root>
+  )
 }
-
-const rows = [
-    createData(true, false, '2021-10-01', 'Node 1', 'This is a node'),
-    createData(false, true, '2021-10-02', 'Trace 1', 'This is a trace'),
-    createData(true, false, '2021-10-03', 'Node 2', 'This is a node'),
-];
-
-export const AnnotationMenu = (annotations) => {
-    return (
-      <div>
-        <table>
-          <thead>
-            <tr>
-              <th>Node or Trace</th>
-              <th>Date</th>
-              <th>Title</th>
-              <th>Body</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.date}>
-                <td align="left">
-                    {row.node ? "Node" : "Trace"}
-                </td>
-                <td align="left">{row.date}</td>
-                <td align="right">{row.title}</td>
-                <td align="right">{row.body}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  }
