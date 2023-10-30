@@ -4,7 +4,7 @@ import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
 import { AnnotationMenu } from '../AnnotationMenu/AnnotationMenu';
 import { Circle, Line, Span } from '../../types';
 import { draw } from './draw';
-
+import { NodeHover } from '../HoverComponent/NodeHover'
 // Main NodeMap component
 export default function NodeMap() {
     /* ------------------------------ State Management ------------------------------ */
@@ -22,6 +22,8 @@ export default function NodeMap() {
     const [selectedLine, setSelectedLine] = useState(null);
     const [lines, setLines] = useState<Line[]>([]);
     const [circles, setCircles] = useState<Circle[]>([]);
+    const [hoverInfo, setHoverInfo] = useState({ x: 0, y: 0, content: {} });
+    const [isHovered, setIsHovered] = useState(false); // hovering 
 
    /* ------------------------------ Helper Functions ------------------------------ */
 
@@ -110,21 +112,6 @@ export default function NodeMap() {
             });
         };
 
-        // Handles mousemove event on the canvas
-        const handleMouseMove = (e: MouseEvent) => {
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-
-            circles.forEach(circle => {
-                if (circle.isDragging) {
-                circle.x = mouseX;
-                circle.y = mouseY;
-                }
-            });
-
-            draw(canvasContext, canvas, circles, lines);
-        };
 
         const handleMouseOut = () => {
             circles.forEach(circle => {
@@ -133,20 +120,60 @@ export default function NodeMap() {
             draw(canvasContext, canvas, circles, lines);
         }
 
+        // Handles mousemove event on the canvas
+        const handleMouseMove = (e: MouseEvent) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            circles.forEach(circle => {
+
+                if (circle.isDragging) {
+                circle.x = mouseX;
+                circle.y = mouseY;
+                }
+            });
+            draw(canvasContext, canvas, circles, lines);
+        };
+
+        const handleRightClick = (e: MouseEvent) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            let hoverX = mouseX;
+            let hoverY = mouseY;
+
+            circles.forEach(circle => {
+                const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
+                if(distance <= circle.radius){
+                    hoverX = circle.x - 500;
+                    hoverY = circle.y - 500; 
+                    setIsHovered(true);
+                    // console.log('Right clicking...')
+                    setHoverInfo({x:hoverX, y:hoverY, content: circle.data})
+                }
+            });
+
+        }
+
+
         const addEventListeners = () => {
             // Attach event listeners
+            canvas.addEventListener('contextmenu', handleRightClick);
             canvas.addEventListener('mousedown', handleMouseDown);
             canvas.addEventListener('mouseup', handleMouseUp);
             canvas.addEventListener('mousemove', handleMouseMove);
-            canvas.addEventListener('mouseout', handleMouseOut);
+            canvas.addEventListener('mouseout', handleMouseOut); // not in use atm
         }
 
         const removeEventListeners = () => {
             // Remove event listeners
+            canvas.removeEventListener('contextmenu', handleRightClick);
             canvas.removeEventListener('mousedown', handleMouseDown);
             canvas.removeEventListener('mouseup', handleMouseUp);
             canvas.removeEventListener('mousemove', handleMouseMove);
-            canvas.removeEventListener('mouseout', handleMouseOut);
+            canvas.removeEventListener('mouseout', handleMouseOut); // not in use atm 
         }
 
         // Add event listeners
@@ -208,7 +235,7 @@ export default function NodeMap() {
                     />
                 }
             </div>
-
+            {isHovered && <NodeHover data={hoverInfo} />}
             {/* Conditional rendering of AnnotationMenu */}
             {showAnnotationMenu && <AnnotationMenu />}
             {/* Navigation buttons */}
