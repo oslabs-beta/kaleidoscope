@@ -36,3 +36,13 @@ export interface Span {
         }
     }[]
 }
+
+export interface Annotation {
+    nodeId: string;
+    nodeMapId: string;
+    annotationName: string;
+    annotationBody: string;
+    annotationDate: string;
+    x: number;
+    y: number;
+}

@@ -1,0 +1,22 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: "0.0.0.0:4318"
+      grpc:
+        endpoint: "0.0.0.0:4317" # The default gRPC port for OTLP
+
+processors:
+  batch:
+
+exporters:
+  logging:
+  otlphttp:
+    endpoint: "http://localhost:3001/v1/traces"
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp]
