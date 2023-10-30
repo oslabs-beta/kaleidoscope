@@ -11,9 +11,9 @@ const getSpans = (req: Request, res: Response, next: NextFunction) => {
 
 const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
     // Get spans (trace data) and parse it into circles and lines
-        const width:Number = Number(req.params.width.replace(':', ''));
+        const width:any = Number(req.params.width.replace(':', ''));
         const screenwidth:Number = Number(req.params.screenwidth.replace(':', ''));
-        const height:Number = Number(req.params.height.replace(':', ''));
+        const height:any = Number(req.params.height.replace(':', ''));
         const screenheight:Number = Number(req.params.screenheight.replace(':', ''));
         let counter = 0
         // console.log('width', width, 'screenwidth', screenwidth);

@@ -51,6 +51,7 @@ export const draw = (
         canvasContext.fillText(
             `requests: ${line.requests}`, 
         labelX, labelY - 12);
+        }
     });
 
     // Draw circles and node labels
