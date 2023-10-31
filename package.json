@@ -7,7 +7,9 @@
     "start": "cd electron && electron .",
     "start-react": "cd frontend && npm start",
     "start-express": "cd backend && npm start",
-    "start-all": "npm run start-react & npm run start-express & npm start"
+    "start-express-dev": "cd backend && npm run dev",
+    "start-all": "npm run start-react & npm run start-express",
+    "start-dev": "npm run start-react & npm run start-express-dev"
   },
   "keywords": [],
   "author": "",
@@ -16,7 +18,14 @@
     "@babel/core": "^7.23.2",
     "@babel/preset-env": "^7.23.2",
     "@fontsource/roboto": "^5.0.8",
+    "@headlessui/react": "^1.7.17",
+    "@opentelemetry/api": "^1.6.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.39.4",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.44.0",
+    "@opentelemetry/sdk-metrics": "^1.17.1",
+    "@opentelemetry/sdk-node": "^0.44.0",
     "@reduxjs/toolkit": "^1.9.7",
+    "@tailwindcss/forms": "^0.5.6",
     "@types/pg": "^8.10.7",
     "@types/react": "^18.2.31",
     "@types/react-dom": "^18.2.14",
@@ -39,6 +48,7 @@
     "react-router-dom": "^6.17.0",
     "router-dom": "^2.2.11",
     "style-loader": "^3.3.3",
+    "tailwindcss": "^3.3.5",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2",
     "webpack": "^5.89.0",
@@ -46,8 +56,10 @@
     "webpack-dev-server": "^4.15.1"
   },
   "devDependencies": {
+    "@types/file-loader": "^5.0.3",
     "@types/node": "^20.8.7",
     "@types/react-redux": "^7.1.16",
+    "electron-devtools-installer": "^3.2.0",
     "html-webpack-plugin": "^5.5.3",
     "ts-loader": "^9.5.0"
   }

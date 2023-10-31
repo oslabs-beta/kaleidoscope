@@ -1,63 +1,74 @@
-import React, { CSSProperties } from "react";
+import React, { useRef } from "react";
 
-export const NodeHover = (props) => {
+export const NodeHover = (props: any) => {
+
   const { x, y, content } = props.data;
 
-  const tableStyle: CSSProperties = {
-    left: x,
-    top: y,
-    position: "relative",
-    border: '2px solid #000',
-    padding: '5px',
-    backgroundColor: '#fff',
-    width: '200px',
-    fontSize: '12px',
-  };
-
-  const cellStyle: CSSProperties = {
-    border: '1px solid #000',
-    padding: '4px',
-    fontSize: '10px',
-  };
-
-  const flattenObject = (obj) => {
-    const result = [];
+  const flattenObject = (obj: any, prefix = ''): any => {
+    const result: any = [];
+    let counter = 0;
+    // included a counter variable to differentiate duplicate keys that exist in the trace data 
     for (const key in obj) {
+      const prefixedKey = prefix + key; 
       if (typeof obj[key] === 'object') {
-        result.push(...flattenObject(obj[key]));
+        result.push(...flattenObject(obj[key], prefixedKey + '_')); 
       } else {
-        result.push({ key, value: obj[key] });
+        counter++;
+        result.push({ key: prefixedKey, value: obj[key] + counter }); 
       }
     }
     return result;
   };
+  
+  
+
+  const UpperCaseWord = (word: string) => {
+    if (typeof word !== 'string') {
+      return word;
+    }
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  };
 
   const flattenedContent = flattenObject(content);
 
+ 
+
   return (
-    <div style={tableStyle}>
-      <table>
-        <thead>
-          <tr>
-            <th style={cellStyle}>Property</th>
-            <th style={cellStyle}>Value</th>
+    <div
+    className="relative p-5 bg-white inline-block text-base border rounded-md shadow-md font-sans text-gray-800"
+    style={{
+      left: x,
+      top: y,
+      width: "fit-content",
+      maxHeight: "200px",
+      overflowY: "auto",
+    }}
+  >
+    <table>
+      <thead>
+        <tr>
+          <th className="p-4 font-semibold">Traces</th>
+          <th className="p-4 font-semibold">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {flattenedContent.map(({ key, value }: { key: string, value: string }) => (
+          <tr key={key}>
+            <td className="p-4 text-indigo-600 font-semibold">{UpperCaseWord(key) + ':'}</td>
+            <td className="p-4">{UpperCaseWord(value)}</td>
           </tr>
-        </thead>
-        <tbody>
-          {flattenedContent.map(({ key, value }) => (
-            <tr key={key}>
-              <td style={cellStyle}>{key}</td>
-              <td style={cellStyle}>{value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+        ))}
+      </tbody>
+    </table>
+  </div>
+)
 };
 
 
+
 /*
+Example data 
+
 [
   {
     "name": "open-telemetry-trace",
