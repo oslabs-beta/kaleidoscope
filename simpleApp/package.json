@@ -7,5 +7,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@opentelemetry/auto-instrumentations-node": "^0.39.4",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.44.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.44.0",
+    "@opentelemetry/sdk-metrics": "^1.17.1",
+    "@opentelemetry/sdk-node": "^0.44.0",
+    "@opentelemetry/sdk-trace-node": "^1.17.1",
+    "express": "^4.18.2"
+  }
 }

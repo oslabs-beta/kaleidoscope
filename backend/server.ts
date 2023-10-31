@@ -6,6 +6,8 @@ import nodemapRouter from './routers/nodemapRouter'
 import tracesRouter from './routers/tracesRouter';
 import { initializeDatabase } from './models/annotationModel';
 import annotationRouter from './routers/annotationRouter';
+import zlib from 'zlib';
+import protobuf from 'protobufjs';
 
 const PORT = 3001;
 

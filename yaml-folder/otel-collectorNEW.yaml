@@ -1,4 +1,5 @@
 receivers:
+  zipkin:
   otlp:
     protocols:
       http:
@@ -10,13 +11,13 @@ processors:
   batch:
 
 exporters:
-  logging:
+  debug:
   otlphttp:
-    endpoint: "http://localhost:3001/v1/traces"
+    endpoint: "http://host.docker.internal:3001/v1/traces"
 
 service:
   pipelines:
     traces:
-      receivers: [otlp]
+      receivers: [otlp, zipkin]
       processors: [batch]
-      exporters: [otlphttp]
+      exporters: [debug, otlphttp]
