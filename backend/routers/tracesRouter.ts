@@ -79,8 +79,8 @@ router.post('/v1/traces',
     // console.log("Attributes", req.body.decodedData.resourceSpans[0].scopeSpans[0].spans[l].attributes);
 
     // console.log('req headers', req.headers);
-    console.log("Data received, decompressed, and decoded successfully");
-    res.status(200).send("Data received, decompressed, and decoded successfully");
+    console.log("Data received, decompressed, decoded, and stored successfully");
+    res.status(200).send("Data received, decompressed, decoded, and stored successfully");
 });
 
 // router.use('*', (req: Request, res: Response, next: NextFunction) => {
