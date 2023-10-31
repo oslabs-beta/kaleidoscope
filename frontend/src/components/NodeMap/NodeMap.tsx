@@ -43,7 +43,13 @@ export default function NodeMap() {
     // Makes map w/ new nodes and lines
     useEffect(() => {
         const getNewNodeMap = async () => {
-            let result = await fetch('http://localhost:3001/nodemap'); // fetch goes here
+            let result = await fetch('http://localhost:3001/nodemap', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            }); // fetch goes here
             const data: NodeMapResponse = await result.json();
             setCircles(data[0]);
             setLines(data[1]);

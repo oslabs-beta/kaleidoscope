@@ -1,8 +1,44 @@
 import React from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import kaleidoscope from '../../images/kaleidoscope.png';
 
 export default function NewHome() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const navigate = useNavigate();
+
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        try {
+            const response = await fetch('http://localhost:3001/login', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+            console.log(data);
+
+            if (data.success) {
+                localStorage.setItem('jwtToken', data.token);
+                console.log('Successfully logged in!');
+                navigate('/nodemap');
+            } else {
+            // Handle errors or invalid login
+            console.error(data.error || 'Login failed');
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     return (
       <>
         <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
@@ -18,7 +54,7 @@ export default function NewHome() {
           </div>
   
           <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-            <form className="space-y-6" action="#" method="POST">
+            <form className="space-y-6" action="#" method="POST" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
                   Email address
@@ -30,6 +66,8 @@ export default function NewHome() {
                     type="email"
                     autoComplete="email"
                     required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
@@ -53,20 +91,22 @@ export default function NewHome() {
                     type="password"
                     autoComplete="current-password"
                     required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
   
               <div>
-                <Link to="/nodemap" className="ml-4">
+
                     <button
                         type="submit"
                         className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                         >
                         Sign in
                     </button>
-                </Link>
+
               </div>
             </form>
   
