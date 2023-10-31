@@ -59,7 +59,7 @@ export default function NewHome() {
               </div>
   
               <div>
-              <Link to="/viewlogin" className="ml-4">
+                <Link to="/nodemap" className="ml-4">
                     <button
                         type="submit"
                         className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -71,10 +71,10 @@ export default function NewHome() {
             </form>
   
             <p className="mt-10 text-center text-sm text-gray-500">
-              Not a member?{' '}
-              <a href="#" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
-                Start a 14 day free trial
-              </a>
+              Want a look?{' '}
+              <Link to="/register" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
+                Register now
+              </Link>
             </p>
           </div>
         </div>

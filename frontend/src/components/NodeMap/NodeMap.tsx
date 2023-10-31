@@ -242,9 +242,9 @@ export default function NodeMap() {
                             Go Back
                         </button>
                     </Link>
-                    <button onClick={toggleAnnotationMode} className="flex flex-col items-center">
+                    <div onClick={toggleAnnotationMode} className="flex flex-col items-center cursor-pointer">
                         <ToggleAnnotationMode />
-                    </button>
+                    </div>
                     <button
                         onClick={() => setShowAnnotationMenu(prev => !prev)}
                         type="button"
