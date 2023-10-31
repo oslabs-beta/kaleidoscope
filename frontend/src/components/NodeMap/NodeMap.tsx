@@ -29,6 +29,7 @@ export default function NodeMap() {
     const [hoverInfo, setHoverInfo] = useState({ x: 0, y: 0, content: {} });
     const [isHovered, setIsHovered] = useState(false); // hovering 
     const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
+
    /* ------------------------------ Helper Functions ------------------------------ */
 
      // Toggle annotation mode on/off
@@ -55,7 +56,8 @@ export default function NodeMap() {
     // Draws canvas
     useEffect(() => {
         // Get spans (trace data) and parse it into circles and lines
-        const canvas = canvasRef.current;
+        const canvas: HTMLCanvasElement | null = canvasRef.current;
+        // console.log(canvasRef.current)
 
         // Make sure canvas is defined
         if(!canvas){
@@ -172,7 +174,6 @@ export default function NodeMap() {
                     hoverY = circle.y - 550;
                     setIsHovered(true);
                     setHoverInfo({x:hoverX, y:hoverY, content: circle.data})
-
                 }
             });
           }else {
@@ -180,7 +181,6 @@ export default function NodeMap() {
             setIsContextMenuOpen(false);
         }
         }
-
 
         const addEventListeners = () => {
             // Attach event listeners
@@ -241,12 +241,26 @@ export default function NodeMap() {
         };
     }, []);
 
+    // Makes map w/ new nodes and lines
+    useEffect(() => {
+        const width = (canvasRef.current) ? canvasRef.current.width : 300;
+        const height = (canvasRef.current) ? canvasRef.current.height : 150;
+
+        const getNewNodeMap = async () => {
+            let result = await fetch(`http://localhost:3001/nodemap/:${width}&:${window.screen.availWidth}&:${height}&:${window.screen.availHeight}`); // fetch goes here
+            const data: NodeMapResponse = await result.json();
+            setCircles(data[0]);
+            setLines(data[1]);
+        }
+        getNewNodeMap();
+    }, [])
+
     return (
         <div>
             {/* Canvas and Buttons container */}
             <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow m-4">
-                <div className="px-4 py-5 sm:px-6 text-center text-4xl font-semibold">
-                    Node Map
+            <div className="px-4 py-5 sm:px-6 text-center text-4xl font-semibold text-white" style={{ background: "linear-gradient(45deg, #6366F1, #9333EA)", fontFamily: "Poppins, sans-serif" }}>
+                 Node Map
                 </div>
                 <div className="px-4 py-5 sm:p-6 relative">
                     <canvas className="border w-full h-[500px]" ref={canvasRef} />

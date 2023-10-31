@@ -31,7 +31,7 @@
     },
     "parent_id": "0x93564f51e1abe1c2",
     "start_time": "2022-04-29T18:52:58.114492Z",
-    "end_time": "2022-04-29T18:52:58.114631Z",
+    "end_time": "2022-04-29T18:52:58.118631Z",
     "attributes": {
       "http.route": "some_route3"
     },
@@ -53,7 +53,7 @@
     },
     "parent_id": "0x93564f51e1abe1c2",
     "start_time": "2022-05-01T13:27:30.892311Z",
-    "end_time": "2022-05-01T13:27:30.892446Z",
+    "end_time": "2022-05-01T13:27:30.896446Z",
     "attributes": {
       "http.route": "some_route1"
     },
@@ -75,7 +75,7 @@
     },
     "parent_id": "0x93564f51e1abe1c2",
     "start_time": "2022-06-15T09:10:20.002301Z",
-    "end_time": "2022-06-15T09:10:20.002438Z",
+    "end_time": "2022-06-15T09:10:20.007438Z",
     "attributes": {
       "http.route": "data_processing_route"
     },
@@ -95,7 +95,7 @@
       "trace_id": "0xa5c3e2f8d688dcfcb77f3a8ee3201a49",
       "span_id": "0x5c9b60ad789d0f3e"
     },
-    "parent_id": "0x4e5c94c156a2f278",
+    "parent_id": "0x267e9e4d9fa21f81",
     "start_time": "2022-07-19T14:35:50.511234Z",
     "end_time": "2022-07-19T14:35:50.511375Z",
     "attributes": {
@@ -141,7 +141,7 @@
     },
     "parent_id": "0x820d97dce1e4cf42",
     "start_time": "2022-09-30T08:20:15.114992Z",
-    "end_time": "2022-09-30T08:20:15.115110Z",
+    "end_time": "2022-09-30T08:20:15.133110Z",
     "attributes": {
       "http.route": "service_migration_route"
     },

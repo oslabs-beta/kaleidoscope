@@ -1,9 +1,6 @@
-/*instrumentation.js*/
 // Require dependencies
 const { NodeSDK } = require('@opentelemetry/sdk-node');
-const { OtlpHttpSpanExporter } = require('@opentelemetry/exporter-trace-otlp-http');
-console.log(OtlpHttpSpanExporter);
-const { ConsoleSpanExporter } = require('@opentelemetry/sdk-trace-node');
+const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-grpc');
 const {
   getNodeAutoInstrumentations,
 } = require('@opentelemetry/auto-instrumentations-node');
@@ -12,10 +9,12 @@ const {
   ConsoleMetricExporter,
 } = require('@opentelemetry/sdk-metrics');
 
+const otlpExporter = new OTLPTraceExporter({
+  endpoint: 'http://host.docker.internal:4317/v1/traces', // Adjust if your collector is on a different host or port
+});
+
 const sdk = new NodeSDK({
-  traceExporter: new OtlpHttpSpanExporter({
-    endpoint: 'http://localhost:4317',
-  }),
+  traceExporter: otlpExporter,
   metricReader: new PeriodicExportingMetricReader({
     exporter: new ConsoleMetricExporter(),
   }),

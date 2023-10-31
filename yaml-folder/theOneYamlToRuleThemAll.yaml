@@ -1,0 +1,14 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+exporters:
+  logging: # This exporter just logs the received telemetry for demo purposes
+  otlphttp:
+    endpoint: "http://host.docker.internal:3001/v1/traces"
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging, otlphttp]
