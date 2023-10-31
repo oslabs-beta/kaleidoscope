@@ -1,13 +1,67 @@
 import { Circle, Line } from '../../types';
 
+
+
 // Function to draw circle on canvas
+// const drawCircle = (canvasContext: CanvasRenderingContext2D, circle: Circle) => {
+
+//     const gradient = canvasContext.createRadialGradient(
+//         circle.x, circle.y, 0, circle.x, circle.y, circle.radius
+//     );
+    
+//     gradient.addColorStop(1, 'indigo'); // Inner color
+//     gradient.addColorStop(0, 'purple'); // Outer color
+    
+//     canvasContext.fillStyle = gradient;
+
+
+
+    
+//     canvasContext.beginPath();
+//     canvasContext.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+//     canvasContext.fill();
+//     canvasContext.closePath();
+// };
+
 const drawCircle = (canvasContext: CanvasRenderingContext2D, circle: Circle) => {
+    const centerX = circle.x;
+    const centerY = circle.y;
+    const radius = circle.radius;
+    const numberOfSides = 6; // Number of sides for the hexagon
+
     canvasContext.beginPath();
-    canvasContext.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
-    canvasContext.fillStyle = 'black';
-    canvasContext.fill();
+    for (let i = 0; i < numberOfSides; i++) {
+        const angle = (Math.PI / 3) * i;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        if (i === 0) {
+            canvasContext.moveTo(x, y);
+        } else {
+            canvasContext.lineTo(x, y);
+        }
+    }
     canvasContext.closePath();
+
+    // Create a gradient fill with multiple stops for a colorful and vibrant appearance
+    const gradient = canvasContext.createRadialGradient(
+        circle.x, circle.y, 0, circle.x, circle.y, circle.radius
+    );
+
+    gradient.addColorStop(0, 'rgba(111, 66, 193, 0.8)'); // A colorful stop
+    gradient.addColorStop(0.3, 'rgba(134, 125, 235, 0.8)'); // Another colorful stop
+    gradient.addColorStop(1, 'rgba(131, 140, 245, 0.8)'); // A different color for the outer part
+
+    canvasContext.fillStyle = gradient;
+
+    // Set the border color and width
+    canvasContext.strokeStyle = 'indigo'; // Border color
+    canvasContext.lineWidth = 1; // Border width
+
+    // Fill and stroke the hexagon
+    canvasContext.fill();
+    canvasContext.stroke();
 };
+
 
 // Function to draw line between circles
 const drawLine = (canvasContext: CanvasRenderingContext2D, circleA: Circle, circleB: Circle) => {
@@ -45,7 +99,7 @@ export const draw = (
     canvas: HTMLCanvasElement, 
     circles:Circle[], 
     lines:Line[]
-):void | null => {
+    ):void | null => {
     // clear canvas
     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
 

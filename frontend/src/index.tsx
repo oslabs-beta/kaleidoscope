@@ -2,44 +2,36 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import {
-  createBrowserRouter,
-  RouterProvider,
+  BrowserRouter,
+  Routes,
+  Route
 } from 'react-router-dom';
 import NodeMap from './components/NodeMap/NodeMap';
-import ViewCluster from './components/ViewCluster';
+import Registration from './components/Registration/Registration';
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import { store } from './app/store';
 import { Provider } from 'react-redux';
 import './styles/tailwind.css';
 
-
-// Configure routes using createBrowserRouter
-// Define paths and the components to render for each path
-const router = createBrowserRouter([
-  {
-    path: "/", // Root path
-    element: <App />, // Render App component at root path
-  },
-  {
-    path: "/viewlogin", // Path for login view
-    element: <NodeMap />, // Render NodeMap component
-  },
-  {
-    path: "/viewlogin", // Duplicate path - might lead to issues
-    element: <ViewCluster />, // Render ViewCluster component
-  },
-]);
-
-// Create a React root attached to the DOM element with id 'root'
 const rootElement = document.getElementById('root');
+
 if (rootElement) {
-    const root = ReactDOM.createRoot(rootElement);
-    // Render the app within RouterProvider to enable routing
-    root.render(
-      <Provider store={store}>   
-          <RouterProvider router={router} />
-      </Provider>
-    );
+  ReactDOM.createRoot(rootElement).render(
+    <Provider store={store}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<App />} />
+          <Route path="/nodemap" element={
+            <ProtectedRoute>
+              <NodeMap />
+            </ProtectedRoute>
+          } />
+          <Route path="/register" element={<Registration />} />
+        </Routes>
+      </BrowserRouter>
+    </Provider>
+  )
 } else {
-    console.error("Element with ID 'root' not found in the document.");
+  console.error("Element with ID 'root' not found in the document.");
 }
 
