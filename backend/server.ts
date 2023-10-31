@@ -1,10 +1,14 @@
 import express from 'express';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import nodemapRouter from './routers/nodemapRouter';
 import tracesRouter from './routers/tracesRouter';
 import { initializeDatabase } from './models/annotationModel';
+import { authenticateJWT } from './middlewares/authenticateJWT';
 import annotationRouter from './routers/annotationRouter';
 import dotenv from 'dotenv';
 import User from './models/userModel';
@@ -16,9 +20,17 @@ const PORT = 3001;
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:3000', }));
+const corsOptions = {
+    origin: 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST'],
+    optionsSuccessStatus: 200
+}
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 /* ------------------------------ Database Setup ------------------------------ */
 
@@ -43,9 +55,9 @@ setup();
 
 /* ------------------------------ Routers ------------------------------ */
 
-app.use('/nodemap', nodemapRouter);
+app.use('/nodemap', authenticateJWT, nodemapRouter);
 
-app.use('/annotations', annotationRouter);
+app.use('/annotations', authenticateJWT, annotationRouter);
 
 app.use('/v1/traces', tracesRouter);
 
@@ -78,14 +90,33 @@ app.post('/login', async (req: Request, res: Response) => {
         if (!user) {
             return res.status(400).send({ error: 'Invalid login credentials' });
         }
+
         const isPasswordMatch = await bcrypt.compare(password, user.password); // compare input password with stored hash
         if (!isPasswordMatch) {
             return res.status(400).send({ error: 'Invalid login credentials' });
         }
-        res.send({ user });
+
+        const token = jwt.sign(
+            { userId: user._id, email: user.email }, // payload
+            process.env.JWT_SECRET!, // secret key
+            { expiresIn: '1h' } // set token to expire in 1 hour
+        ); // create a token
+
+        res.cookie('jwtToken', token, {
+            httpOnly: true, 
+            secure: true,   // use this in production (when using HTTPS)
+            maxAge: 3600000 // 1 hour in milliseconds
+        });
+
+        res.status(200).send({ message: 'Logged in!', token, success: true });
     } catch (error) {
         res.status(400).send(error);
     }
+});
+
+//authenticate
+app.use('/auth/check', authenticateJWT, (req: Request, res: Response) => {
+    res.status(200).send({ message: 'Authenticated!', success: true });
 });
 
 app.listen(PORT, () => {

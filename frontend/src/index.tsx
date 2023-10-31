@@ -8,6 +8,7 @@ import {
 } from 'react-router-dom';
 import NodeMap from './components/NodeMap/NodeMap';
 import Registration from './components/Registration/Registration';
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import { store } from './app/store';
 import { Provider } from 'react-redux';
 import './styles/tailwind.css';
@@ -20,7 +21,11 @@ if (rootElement) {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />} />
-          <Route path="/nodemap" element={<NodeMap />} />
+          <Route path="/nodemap" element={
+            <ProtectedRoute>
+              <NodeMap />
+            </ProtectedRoute>
+          } />
           <Route path="/register" element={<Registration />} />
         </Routes>
       </BrowserRouter>
