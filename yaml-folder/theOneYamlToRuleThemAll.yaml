@@ -1,7 +1,12 @@
 receivers:
   otlp:
     protocols:
+      http:
+        endpoint: "0.0.0.0:4318"
       grpc:
+        endpoint: "0.0.0.0:4317" 
+processors:
+  batch:
 exporters:
   logging: # This exporter just logs the received telemetry for demo purposes
   otlphttp:
