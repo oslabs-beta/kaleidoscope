@@ -5,7 +5,7 @@ import { Request, Response, NextFunction } from 'express'
 
 const getSpans = (req: Request, res: Response, next: NextFunction) => {
     // console.log('in the middleware...')
-    res.locals.spans = JSON.parse(fs.readFileSync('sampletracedata.json').toString()) //test data
+    res.locals.spans = JSON.parse(fs.readFileSync('../tracestore.json').toString()) //test data
     return next();
 }
 
@@ -42,18 +42,27 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
         }
 
 
-        const spans:{spans:Span[]} = res.locals.spans;
+        const spans:Span[] = res.locals.spans;
         const defaultNodeRadius = 20;
         const endpoints:{ [key: string]: any }  = {};
         const nodes:Circle[] = [];
         const lines:Line[] = [];
-        spans.spans.forEach(span => {
+
+        spans.forEach(span => {
+            //find http.route within the attributes property
+
+            if(!span.attributes) return; //what do i do with these
+
+            const routeProp = span.attributes.find(obj => obj.key === 'http.route');
+            if(!routeProp) return res.status(500).send('error while parsing span data');
+            const route = routeProp.value.stringValue;
+
             //check if we need to create a new node/circle; create if so
-            if(!endpoints[span.attributes['http.route']]){ //if endpoint is not yet in our nodes
+            if(!endpoints[route]){ //if endpoint is not yet in our nodes
                 const [x, y] = randomPOS(width, height); //generate a position for the new node
                 nodes.push({
-                    name: span.attributes['http.route'],
-                    id: span.context.span_id,
+                    name: route,
+                    id: span.spanId,
                     x: x,
                     y: y,
                     radius: defaultNodeRadius,
@@ -61,29 +70,37 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
                     isHovered: false, 
                     data: [span]
                 })
-                endpoints[span.attributes['http.route']] = nodes[nodes.length - 1]; //keep references to nodes at each unique endpoint
+
+                //keep references to nodes at each unique endpoint
+                endpoints[route] = nodes[nodes.length - 1];
             }else{
                 //pass span data to an existing node
-                endpoints[span.attributes['http.route']].data.push(span);
+                endpoints[route].data.push(span);
             }
             //check if we need to create a new line (if node has parent_id); create if so
-            if(span.parent_id !== null){
-                const parent:Circle|undefined = nodes.find((s) => s.id === span.parent_id);
+            if(span.parentSpanId !== null && span.parentSpanId !== ''){
+                const parent:Circle|undefined = nodes.find((s) => s.id === span.parentSpanId);
                 if(parent){ 
-                    const time1:Date | any = new Date(span.end_time)
-                    const time2:Date | any = new Date(span.start_time)
+                    // const time1:Date | any = new Date(span.end_time)
+                    // const time2:Date | any = new Date(span.start_time)
+
                     // console.log('time1', time1, 'time2', time2, 'latency', time1.getTime() - time2.getTime());
+
+                    //calculate latency
+                    const timediff = span.endTimeUnixNano - span.startTimeUnixNano;
+                    const latency = Number((timediff / 1000000).toFixed(3)) //conversion from nanoseconds to ms
+
                     //check for an exisiting line / incorporate latency
-                    const line:Line|undefined = lines.find((l) => l.from === parent.name && l.to === span.attributes['http.route']);
+                    const line:Line|undefined = lines.find((l) => l.from === parent.name && l.to === route);
                     if(line) {
                         line.requests++;
                         const weight:number = 1 / line.requests;
-                        line.latency = ((line.latency * weight) + (time1 - time2) * (1 - weight)); //calculate avg latency
+                        line.latency = Number(((line.latency * weight) + latency * (1 - weight)).toFixed(3)); //calculate avg latency
                     }else{
                         lines.push({  //create a new line
                             from: parent.name,
-                            to: span.attributes['http.route'],
-                            latency: (time1 - time2),
+                            to: route,
+                            latency: latency,
                             requests: 1
                         })
                     }
@@ -98,23 +115,3 @@ module.exports = {
     getSpans,
     makeNodes
 }
-
-// a single span {
-//     traceId: '5V79P3OJqZmuHexxqH4o6w==',
-//     spanId: 'XpxSsbtX0ps=',
-//     parentSpanId: 'IIV5lVpnRJY=',
-//     name: 'middleware - query',
-//     kind: 'SPAN_KIND_INTERNAL',
-//     startTimeUnixNano: '1698767870631000000',
-//     endTimeUnixNano: '1698767870631035993',
-//     attributes: [
-//       { key: 'http.route', value: [Object] },
-//       { key: 'express.name', value: [Object] },
-//       { key: 'express.type', value: [Object] }
-//     ],
-//     status: {}
-//   }
-//   Attributes [
-//     { key: 'http.route', value: { stringValue: '/rolldice' } },
-//     { key: 'express.name', value: { stringValue: '/rolldice' } },
-//     { key: 'express.type', value: { stringValue: 'request_handler' } }
