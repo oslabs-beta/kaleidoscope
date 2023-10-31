@@ -1,3 +1,5 @@
+import { Request } from 'express';
+
 export interface Circle {
     name: string;
     id: string;
@@ -60,4 +62,8 @@ export interface Annotation {
     annotationDate: string;
     x: number;
     y: number;
+}
+
+export interface IRequest extends Request {
+    user?: any;  // You can be more specific with the type here if you know the shape of your user object
 }

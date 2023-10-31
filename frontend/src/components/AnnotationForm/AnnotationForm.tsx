@@ -1,35 +1,31 @@
 // Component to render the form which accepts user input to create annotation
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { CSSProperties } from 'react';
 import { useDispatch } from 'react-redux';
-import { addAnnotation } from  '../../features/annotation/annotationSlice';
+import { addAnnotation } from '../../features/annotation/annotationSlice';
 import { saveAnnotation } from '../../services/api';
 import { Annotation } from '../../types';
 
 interface AnnotationFormProps {
   x: number;
   y: number;
-  onSave: (annotation: Annotation) => void; 
+  onSave: (annotation: Annotation) => void;
   onCancel: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 export const AnnotationForm: React.FC<AnnotationFormProps> = ({ x, y, onSave, onCancel }) => {
   const [annotationName, setName] = useState('');
   const [annotationBody, setBody] = useState('');
-  const [annotationDate, setDate] = useState(new Date().toISOString()); // use current date
+  const [annotationDate, setDate] = useState(new Date().toISOString());
   const [nodeId, setNodeId] = useState('dummy_nodeId');
   const [nodeMapId, setNodeMapId] = useState('dummy_nodeMapId');
 
   const dispatch = useDispatch();
 
-  console.log('x', x, 'y', y);
-  // Function to handle form submission
+   // Function to handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const newAnnotation = {
-      annotationName, 
+      annotationName,
       annotationBody,
       annotationDate,
       nodeId,
@@ -47,42 +43,38 @@ export const AnnotationForm: React.FC<AnnotationFormProps> = ({ x, y, onSave, on
       console.log("Failed to save annotation:", response.error);
     }
   };
-  
-  // Style for the form. Position it absolutely and set the x/y coordinates based on the props
-  // passed down from the users' click event.
-  const formStyle: CSSProperties = {
-    position: 'absolute',
-    top: `${y}px`,
-    left: `${x}px`,
-    zIndex: 100,
-  };
 
   return (
-    <div className="absolute z-10 w-72 h-72 bg-cyan-200 p-4 rounded-md" style={{...formStyle}}>
+    <div className="absolute z-10 w-72 h-72 bg-gray-200 p-4 rounded-md" style={{ top: `${y}px`, left: `${x}px`, zIndex: 100 }}>
       <div>
-        <h5 className ="text-lg font-semibold">
+        <h5 className="text-lg font-semibold text-gray-900">
           Add Annotation
         </h5>
-        <form onSubmit={handleSubmit} className="flex flex-col">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
-            className="border bg-sky-50 rounded p-2"
+            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600"
             type="text"
             placeholder="Annotation Name"
             value={annotationName}
             onChange={(e) => setName(e.target.value)}
-          >
-          </input>
+          />
           <textarea
             placeholder="Annotation Body"
-            className="border bg-sky-50 rounded p-2"
+            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600"
             rows={4}
             value={annotationBody}
             onChange={(e) => setBody(e.target.value)}
           />
-          <div className="flex justify-between mt-4">
-            <button type="submit" className="bg-cyan-950 text-sky-50 rounded p-2">Save</button>
-            <button onClick={onCancel} className="bg-cyan-950 text-sky-50 rounded p-2">Cancel</button>
+         <div className="flex justify-between">
+           <button type="submit" className="flex w-1/3 justify-center rounded-md bg-indigo-600 px-2 py-1 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus:ring-2 focus:ring-inset focus:ring-indigo-600">
+              Save
+            </button>
+            <div className="w-2/3"></div>
+            <button onClick={onCancel} className="flex w-1/3 justify-center rounded-md bg-indigo-600 px-2 py-1 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus:ring-2 focus:ring-inset focus:ring-indigo-600">
+              Cancel
+            </button>
           </div>
+
         </form>
       </div>
     </div>
