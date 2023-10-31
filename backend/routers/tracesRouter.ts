@@ -67,7 +67,8 @@ router.post('/v1/traces', decompressRequest, decodeTraceData, (req: Request, res
     // console.log("Decompressed trace data:", req.body);
     console.log("Decoded data", req.body.decodedData);
     console.log("Spans", req.body.decodedData.resourceSpans[0].scopeSpans[0]);
-    console.log("Attributes", req.body.decodedData.resourceSpans[0].scopeSpans[0].attributes);
+    console.log("Attributes", JSON.stringify(req.body.decodedData.resourceSpans[0].scopeSpans[0].attributes, null, 2));
+
 
     // console.log('req headers', req.headers);
     res.status(200).send("Data received, decompressed, and decoded successfully");
