@@ -1,19 +1,20 @@
 const db = require('../models/annotationModel.ts');
 const fs = require('fs');
 import { Circle, Line, Span } from '../types';
+import { Request, Response, NextFunction } from 'express'
 
-const getSpans = (req, res, next) => {
+const getSpans = (req: Request, res: Response, next: NextFunction) => {
     console.log('in the middleware...')
     res.locals.spans = JSON.parse(fs.readFileSync('sampletracedata.json').toString()) //test data
     return next();
 }
 
-const makeNodes = async (req, res, next) => {
+const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
     // Get spans (trace data) and parse it into circles and lines
   
         const spans:{spans:Span[]} = res.locals.spans;
         const defaultNodeRadius = 20;
-        const endpoints = {};
+        const endpoints:{ [key: string]: any }  = {};
         const nodes:Circle[] = [];
         const lines:Line[] = [];
         let counter = 0
