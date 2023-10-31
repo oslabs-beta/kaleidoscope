@@ -16,6 +16,9 @@ import bcrypt from 'bcryptjs';
 
 dotenv.config(); // Load environment var's
 
+console.log('JWT_SECRET:', process.env.JWT_SECRET);
+console.log('MONGODB_URI:', process.env.MONGODB_URI);
+
 const PORT = 3001;
 
 const app = express();
