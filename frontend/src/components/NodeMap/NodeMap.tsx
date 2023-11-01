@@ -1,15 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
 import { Circle, Line, Span } from '../../types';
 import { draw } from './draw';
+import { NodeHover } from '../HoverComponent/NodeHover'
 import ToggleAnnotationMode  from '../Toggle/Toggle';
 import AnnotationMenu from '../AnnotationMenu/AnnotationMenu';
 
 type NodeMapResponse = [Circle[], Line[]];
 
 // Main NodeMap component
-export default function NodeMap() {
+export default function NodeMap():ReactNode {
     /* ------------------------------ State Management ------------------------------ */
     
     // Reference to canvas DOM element
@@ -25,6 +26,9 @@ export default function NodeMap() {
     const [selectedLine, setSelectedLine] = useState<Line | null>(null);
     const [lines, setLines] = useState<Line[]>([]);
     const [circles, setCircles] = useState<Circle[]>([]);
+    const [hoverInfo, setHoverInfo] = useState({ x: 0, y: 0, content: {} });
+    const [isHovered, setIsHovered] = useState(false); // hovering 
+    const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
 
    /* ------------------------------ Helper Functions ------------------------------ */
 
@@ -36,27 +40,12 @@ export default function NodeMap() {
 
         /* ------------------------------ The useEffect Zone------------------------------ */
 
-    // Makes map w/ new nodes and lines
-    useEffect(() => {
-        const getNewNodeMap = async () => {
-            let result = await fetch('http://localhost:3001/nodemap', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            }); // fetch goes here
-            const data: NodeMapResponse = await result.json();
-            setCircles(data[0]);
-            setLines(data[1]);
-        }
-        getNewNodeMap();
-    }, [])
-    
+   
     // Draws canvas
     useEffect(() => {
         // Get spans (trace data) and parse it into circles and lines
-        const canvas = canvasRef.current;
+        const canvas: HTMLCanvasElement | null = canvasRef.current;
+        // console.log(canvasRef.current)
 
         // Make sure canvas is defined
         if(!canvas){
@@ -67,8 +56,14 @@ export default function NodeMap() {
         // Get canvas context
         const canvasContext = canvas.getContext('2d');
 
+        if(!canvasContext){
+            console.log('canvasContext is undefined')
+            return; 
+        } 
+
         // Handles mousedown event on the canvas
         const handleMouseDown = (e: MouseEvent) => {
+            if(!circles || !circles.length) return;
             const rect = canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
@@ -121,61 +116,86 @@ export default function NodeMap() {
 
         // Handles mouseup event on the canvas
         const handleMouseUp = () => {
+            if(!circles || !circles.length) return;
             circles.forEach(circle => {
                 circle.isDragging = false;
             });
         };
 
+
+        const handleMouseOut = () => {
+            if(!circles || !circles.length) return;
+            circles.forEach(circle => {
+                circle.isHovered = false;
+            });
+            draw(canvasContext, canvas, circles, lines);
+        }
+
         // Handles mousemove event on the canvas
         const handleMouseMove = (e: MouseEvent) => {
+            if(!circles || !circles.length) return;
             const rect = canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
-
+            
             circles.forEach(circle => {
+
                 if (circle.isDragging) {
                 circle.x = mouseX;
                 circle.y = mouseY;
                 }
             });
 
-            if (canvasContext) {
-                draw(canvasContext, canvas, circles, lines);
-            } else {
-                console.warn("Canvas context is not available");
-            }
+            draw(canvasContext, canvas, circles, lines);
         };
 
-        const handleMouseOut = () => {
+        const handleRightClick = (e: MouseEvent) => {
+            e.preventDefault(); 
+         if(!isContextMenuOpen){   
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            let hoverX = mouseX;
+            let hoverY = mouseY;
+
             circles.forEach(circle => {
-                circle.isHovered = false;
+                const distance = Math.sqrt((mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2);
+                if(distance <= circle.radius){
+                    hoverX = circle.x;
+                    hoverY = circle.y - 550;
+                    setIsHovered(true);
+                    setHoverInfo({x:hoverX, y:hoverY, content: circle.data})
+                }
             });
-            if (canvasContext) {
-                draw(canvasContext, canvas, circles, lines);
-            } else {
-                console.warn("Canvas context is not available");
-            }
+          }else {
+            console.log('this is context menu ', isContextMenuOpen);
+            setIsContextMenuOpen(false);
+        }
         }
 
         const addEventListeners = () => {
             // Attach event listeners
+            canvas.addEventListener('contextmenu', handleRightClick);
             canvas.addEventListener('mousedown', handleMouseDown);
             canvas.addEventListener('mouseup', handleMouseUp);
             canvas.addEventListener('mousemove', handleMouseMove);
-            canvas.addEventListener('mouseout', handleMouseOut);
+            canvas.addEventListener('mouseout', handleMouseOut); // not in use atm
         }
 
         const removeEventListeners = () => {
             // Remove event listeners
+            canvas.removeEventListener('contextmenu', handleRightClick);
             canvas.removeEventListener('mousedown', handleMouseDown);
             canvas.removeEventListener('mouseup', handleMouseUp);
             canvas.removeEventListener('mousemove', handleMouseMove);
-            canvas.removeEventListener('mouseout', handleMouseOut);
+            canvas.removeEventListener('mouseout', handleMouseOut); // not in use atm 
+            
         }
 
         // Add event listeners
         addEventListeners();
-        if (canvasContext) {
+        if (canvasContext && circles && circles.length) {
             draw(canvasContext, canvas, circles, lines);
         } else {
             console.warn("Canvas context is not available");
@@ -184,7 +204,10 @@ export default function NodeMap() {
         return () => {
             removeEventListeners();
         };
+
+        
     }, [circles, lines, inAnnotationMode]);
+
 
     // Resizes canvas w/ window
     useEffect(() => {
@@ -210,12 +233,26 @@ export default function NodeMap() {
         };
     }, []);
 
+    // Makes map w/ new nodes and lines
+    useEffect(() => {
+        const width = (canvasRef.current) ? canvasRef.current.width : 300;
+        const height = (canvasRef.current) ? canvasRef.current.height : 150;
+
+        const getNewNodeMap = async () => {
+            let result = await fetch(`http://localhost:3001/nodemap/:${width}&:${height}`); // fetch goes here
+            const data: NodeMapResponse = await result.json();
+            setCircles(data[0]);
+            setLines(data[1]);
+        }
+        getNewNodeMap();
+    }, []);
+
     return (
         <div>
             {/* Canvas and Buttons container */}
             <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow m-4">
-                <div className="px-4 py-5 sm:px-6 text-center text-4xl font-semibold">
-                    Node Map
+            <div className="px-4 py-5 sm:px-6 text-center text-4xl font-semibold text-white" style={{ background: "linear-gradient(45deg, #6366F1, #9333EA)", fontFamily: "Poppins, sans-serif" }}>
+                Node Map
                 </div>
                 <div className="px-4 py-5 sm:p-6 relative">
                     <canvas className="border w-full h-[500px]" ref={canvasRef} />
@@ -261,6 +298,7 @@ export default function NodeMap() {
                 </div>
                 {/* Conditional rendering of AnnotationMenu */}
                 {showAnnotationMenu && <AnnotationMenu open={showAnnotationMenu} setOpen={setShowAnnotationMenu}/>}
+                {isHovered && <NodeHover data = {hoverInfo}/>}
             </div>
         </div>
     );
