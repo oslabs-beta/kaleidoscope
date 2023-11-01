@@ -6,10 +6,12 @@ import { Request, Response, NextFunction } from 'express'
 const getSpans = (req: Request, res: Response, next: NextFunction) => {
     // console.log('in the middleware...')
     res.locals.spans = JSON.parse(fs.readFileSync('../tracestore.json').toString()) //test data
+    console.log('spans length', res.locals.spans.length)
     return next();
 }
 
 const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
+    console.log('res.locals.spans', res.locals.spans.length)
     // Get spans (trace data) and parse it into circles and lines
         const width:number = Number(req.params.width.replace(':', ''));
         //const screenwidth:Number = Number(req.params.screenwidth.replace(':', ''));
@@ -43,6 +45,7 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
 
 
         const spans:Span[] = res.locals.spans;
+        // console.log('spans', spans)
         const defaultNodeRadius = 20;
         const endpoints:{ [key: string]: any }  = {};
         const nodes:Circle[] = [];
@@ -50,10 +53,11 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
 
         spans.forEach(span => {
             //find http.route within the attributes property
-
+            // console.log('span', span)
             if(!span.attributes) return; //what do i do with these
-
+            console.log('ding')
             const routeProp = span.attributes.find(obj => obj.key === 'http.route');
+            console.log('routeProp', routeProp)
             if(!routeProp) return res.status(500).send('error while parsing span data');
             const route = routeProp.value.stringValue;
 
@@ -107,6 +111,7 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
                 }
             }
         })
+        console.log('nodes', nodes, 'lines', lines)
         res.locals.nodes = [nodes, lines]; //store nodes and lines in res.locals 
         return next();
 }
