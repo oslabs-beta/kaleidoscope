@@ -9,3 +9,7 @@ body {
 canvas {
   background-color: lightgrey;
 }
+
+td {
+  vertical-align: top;
+}
