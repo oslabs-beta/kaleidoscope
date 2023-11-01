@@ -110,10 +110,10 @@ export const NodeHover = (props: any) => {
           <td className="p-4 text-indigo-600 font-semibold">Average Incoming Latency</td>
           <td className="p-4">{avgIncomingLatency}ms</td>
         </tr>
-        <tr>
+        {/* <tr>
           <td className="p-4 text-indigo-600 font-semibold">Internal / External Spans</td>
           <td className="p-4">{percentInteralSpans}% / {(100 - Number(Number(percentInteralSpans).toFixed(2))).toFixed(2)}%</td>
-        </tr>
+        </tr> *//** is there more useful forms for the data? */}
         <tr>
           <td>
             <p className="p-4 text-indigo-600 font-semibold"> Unique actions detected: </p>
