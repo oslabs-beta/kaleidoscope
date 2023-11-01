@@ -1,6 +1,7 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
+import NewAnnotationForm from '../AnnotationForm/NewAnnotationForm';
 import { Circle, Line, Span } from '../../types';
 import { draw } from './draw';
 import { NodeHover } from '../HoverComponent/NodeHover'
@@ -298,6 +299,7 @@ export default function NodeMap():ReactNode {
                 {/* Conditional rendering of AnnotationMenu */}
                 {showAnnotationMenu && <AnnotationMenu open={showAnnotationMenu} setOpen={setShowAnnotationMenu}/>}
                 {isHovered && <NodeHover data={hoverInfo} setIsHovered={setIsHovered} />}
+                {/* {<NewAnnotationForm/>} */}
             </div>
         </div>
     );
