@@ -119,7 +119,7 @@ export const draw = (
 
         // Display label
         canvasContext.font = '12px Arial';
-        canvasContext.fillStyle = 'red';
+        canvasContext.fillStyle = line.latency < 100 ? 'green' : 'red'; //over 100ms --> red latency
         canvasContext.fillText(
             `avg latency: ${line.latency}ms`, 
         labelX, labelY);
@@ -136,7 +136,7 @@ export const draw = (
         // Display trace data on the circle
         // needs to be reconfigured w/ store
         canvasContext.font = '12px Arial';
-        canvasContext.fillStyle = 'white';
-        canvasContext.fillText(circle.name, circle.x - 15, circle.y);
+        canvasContext.fillStyle = 'darkslategrey';
+        canvasContext.fillText(circle.name, circle.x - (circle.name.length * 2), circle.y - 22);
     });
 };
