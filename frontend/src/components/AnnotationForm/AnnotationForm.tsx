@@ -45,38 +45,68 @@ export const AnnotationForm: React.FC<AnnotationFormProps> = ({ x, y, onSave, on
   };
 
   return (
-    <div className="absolute z-10 w-72 h-72 bg-gray-200 p-4 rounded-md" style={{ top: `${y}px`, left: `${x}px`, zIndex: 100 }}>
-      <div>
-        <h5 className="text-lg font-semibold text-gray-900">
-          Add Annotation
-        </h5>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="absolute z-10" style={{ top: `${y}px`, left: `${x}px`, zIndex: 100 }}>
+      <form action="#" className="relative" onSubmit={handleSubmit}>
+        <div className="overflow-hidden rounded-lg bg-white border border-gray-300 shadow-sm focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
+          <label htmlFor="title" className="sr-only">
+            Annotation Title
+          </label>
           <input
-            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600"
             type="text"
-            placeholder="Annotation Name"
+            name="title"
+            id="title"
+            className="block w-full border-0 pt-2.5 text-lg font-medium placeholder:text-gray-400 focus:ring-0"
+            placeholder="Annotation Title"
             value={annotationName}
             onChange={(e) => setName(e.target.value)}
           />
+          <label htmlFor="body" className="sr-only">
+            Annotation Body
+          </label>
           <textarea
-            placeholder="Annotation Body"
-            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600"
-            rows={4}
+            rows={2}
+            name="body"
+            id="body"
+            className="block w-full resize-none border-0 py-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+            placeholder="Write an annotation..."
+            defaultValue={''}
             value={annotationBody}
             onChange={(e) => setBody(e.target.value)}
           />
-         <div className="flex justify-between">
-           <button type="submit" className="flex w-1/3 justify-center rounded-md bg-indigo-600 px-2 py-1 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus:ring-2 focus:ring-inset focus:ring-indigo-600">
-              Save
-            </button>
-            <div className="w-2/3"></div>
-            <button onClick={onCancel} className="flex w-1/3 justify-center rounded-md bg-indigo-600 px-2 py-1 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus:ring-2 focus:ring-inset focus:ring-indigo-600">
-              Cancel
-            </button>
-          </div>
 
-        </form>
-      </div>
+          {/* Spacer element to match the height of the toolbar */}
+          <div aria-hidden="true">
+            <div className="py-2">
+              <div className="h-9" />
+            </div>
+            <div className="h-px" />
+            <div className="py-2">
+              <div className="py-px">
+                <div className="h-9" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute inset-x-px bottom-0">
+          <div className="flex items-center justify-between space-x-3 border-t border-gray-200 px-2 py-2 sm:px-3">
+            <div className="flex-shrink-0">
+              <button
+                type="submit"
+                className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
+                Create
+              </button>
+              <button
+                onClick={onCancel}
+                className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
   );
 };
