@@ -6,10 +6,12 @@ import { Request, Response, NextFunction } from 'express'
 const getSpans = (req: Request, res: Response, next: NextFunction) => {
     // console.log('in the middleware...')
     res.locals.spans = JSON.parse(fs.readFileSync('../tracestore.json').toString()) //test data
+    console.log('spans length', res.locals.spans.length)
     return next();
 }
 
 const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
+    console.log('res.locals.spans', res.locals.spans.length)
     // Get spans (trace data) and parse it into circles and lines
         const width:number = Number(req.params.width.replace(':', ''));
         //const screenwidth:Number = Number(req.params.screenwidth.replace(':', ''));
@@ -43,6 +45,7 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
 
 
         const spans:Span[] = res.locals.spans;
+        // console.log('spans', spans)
         const defaultNodeRadius = 20;
         const endpoints:{ [key: string]: any }  = {};
         const nodes:Circle[] = [];
@@ -50,12 +53,15 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
 
         spans.forEach(span => {
             //find http.route within the attributes property
-
+            // console.log('span', span)
             if(!span.attributes) return; //what do i do with these
-
-            const routeProp = span.attributes.find(obj => obj.key === 'http.route');
-            if(!routeProp) return res.status(500).send('error while parsing span data');
-            const route = routeProp.value.stringValue;
+            // console.log('ding')
+            // const routeProp = span.attributes.find(obj => obj.key === 'http.route');
+            // console.log('routeProp', routeProp)
+            // if(!routeProp) return;
+            // const route = routeProp.value.stringValue;
+            const route = span.name;
+            if(!route) return //res.status(500).send('error while parsing span data');
 
             //check if we need to create a new node/circle; create if so
             if(!endpoints[route]){ //if endpoint is not yet in our nodes
@@ -77,10 +83,16 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
                 //pass span data to an existing node
                 endpoints[route].data.push(span);
             }
+
+            console.log('span', span);
+            console.log('nodes', nodes);
             //check if we need to create a new line (if node has parent_id); create if so
             if(span.parentSpanId !== null && span.parentSpanId !== ''){
-                const parent:Circle|undefined = nodes.find((s) => s.id === span.parentSpanId);
+                const parentspan:Span|undefined = spans.find((s) => s.spanId === span.parentSpanId);
+                if(!parentspan) return;
+                const parent:Circle|undefined = nodes.find((n) => n.name === parentspan.name);
                 if(parent){ 
+                    if(parent.name === route) return;
                     // const time1:Date | any = new Date(span.end_time)
                     // const time2:Date | any = new Date(span.start_time)
 
@@ -107,6 +119,7 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
                 }
             }
         })
+        console.log('nodes', nodes, 'lines', lines)
         res.locals.nodes = [nodes, lines]; //store nodes and lines in res.locals 
         return next();
 }

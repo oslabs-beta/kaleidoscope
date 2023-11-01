@@ -21,11 +21,7 @@ if (rootElement) {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />} />
-          <Route path="/nodemap" element={
-            <ProtectedRoute>
-              <NodeMap />
-            </ProtectedRoute>
-          } />
+          <Route path="/nodemap" element={<NodeMap />} />
           <Route path="/register" element={<Registration />} />
         </Routes>
       </BrowserRouter>
