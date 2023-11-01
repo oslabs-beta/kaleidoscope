@@ -5,3 +5,7 @@
 body {
     @apply font-sans;
   }
+
+canvas {
+  background-color: lightgrey;
+}

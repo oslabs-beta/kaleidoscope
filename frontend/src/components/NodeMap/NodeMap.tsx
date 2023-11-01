@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnnotationForm } from '../AnnotationForm/AnnotationForm';
 import { Circle, Line, Span } from '../../types';
@@ -10,7 +10,7 @@ import AnnotationMenu from '../AnnotationMenu/AnnotationMenu';
 type NodeMapResponse = [Circle[], Line[]];
 
 // Main NodeMap component
-export default function NodeMap() {
+export default function NodeMap():ReactNode {
     /* ------------------------------ State Management ------------------------------ */
     
     // Reference to canvas DOM element
@@ -40,24 +40,6 @@ export default function NodeMap() {
 
         /* ------------------------------ The useEffect Zone------------------------------ */
 
-    // Makes map w/ new nodes and lines
-    useEffect(() => {
-        const getNewNodeMap = async () => {
-            let result = await fetch('http://localhost:3001/nodemap', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            }); // fetch goes here
-            const data: NodeMapResponse = await result.json();
-            setCircles(data[0]);
-            setLines(data[1]);
-        }
-        getNewNodeMap();
-    }, [])
-
-
    
     // Draws canvas
     useEffect(() => {
@@ -81,6 +63,7 @@ export default function NodeMap() {
 
         // Handles mousedown event on the canvas
         const handleMouseDown = (e: MouseEvent) => {
+            if(!circles || !circles.length) return;
             const rect = canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
@@ -133,6 +116,7 @@ export default function NodeMap() {
 
         // Handles mouseup event on the canvas
         const handleMouseUp = () => {
+            if(!circles || !circles.length) return;
             circles.forEach(circle => {
                 circle.isDragging = false;
             });
@@ -140,6 +124,7 @@ export default function NodeMap() {
 
 
         const handleMouseOut = () => {
+            if(!circles || !circles.length) return;
             circles.forEach(circle => {
                 circle.isHovered = false;
             });
@@ -148,6 +133,7 @@ export default function NodeMap() {
 
         // Handles mousemove event on the canvas
         const handleMouseMove = (e: MouseEvent) => {
+            if(!circles || !circles.length) return;
             const rect = canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
@@ -209,7 +195,7 @@ export default function NodeMap() {
 
         // Add event listeners
         addEventListeners();
-        if (canvasContext) {
+        if (canvasContext && circles && circles.length) {
             draw(canvasContext, canvas, circles, lines);
         } else {
             console.warn("Canvas context is not available");
@@ -253,20 +239,20 @@ export default function NodeMap() {
         const height = (canvasRef.current) ? canvasRef.current.height : 150;
 
         const getNewNodeMap = async () => {
-            let result = await fetch(`http://localhost:3001/nodemap/:${width}&:${window.screen.availWidth}&:${height}&:${window.screen.availHeight}`); // fetch goes here
+            let result = await fetch(`http://localhost:3001/nodemap/:${width}&:${height}`); // fetch goes here
             const data: NodeMapResponse = await result.json();
             setCircles(data[0]);
             setLines(data[1]);
         }
         getNewNodeMap();
-    }, [])
+    }, []);
 
     return (
         <div>
             {/* Canvas and Buttons container */}
             <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow m-4">
             <div className="px-4 py-5 sm:px-6 text-center text-4xl font-semibold text-white" style={{ background: "linear-gradient(45deg, #6366F1, #9333EA)", fontFamily: "Poppins, sans-serif" }}>
-                 Node Map
+                Node Map
                 </div>
                 <div className="px-4 py-5 sm:p-6 relative">
                     <canvas className="border w-full h-[500px]" ref={canvasRef} />

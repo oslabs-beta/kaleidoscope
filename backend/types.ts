@@ -19,25 +19,40 @@ export interface Line {
 }
 
 export interface Span { 
-    name: string;
-    context: {
-        trace_id: string;
-        span_id: string;
-    }
-    parent_id: string;
-    start_time: Date;
-    end_time: Date;
-    attributes: {
-        'http.route': string;
-    }
-    events: {
-        name: string;
-        timestamp: Date;
-        attributes: {
-            event_attributes: Number;
-        }
-    }[]
+    traceId: string,
+    spanId: string,
+    parentSpanId: string,
+    name: string,
+    kind: string,
+    startTimeUnixNano: number,
+    endTimeUnixNano: number,
+    attributes: { 
+        key: string, 
+        value: {
+            stringValue: string;
+        } 
+    }[],
+    status: {}
 }
+// a single span {
+//     traceId: '5V79P3OJqZmuHexxqH4o6w==',
+//     spanId: 'XpxSsbtX0ps=',
+//     parentSpanId: 'IIV5lVpnRJY=',
+//     name: 'middleware - query',
+//     kind: 'SPAN_KIND_INTERNAL',
+//     startTimeUnixNano: '1698767870631000000',
+//     endTimeUnixNano: '1698767870631035993',
+//     attributes: [
+//       { key: 'http.route', value: [Object] },
+//       { key: 'express.name', value: [Object] },
+//       { key: 'express.type', value: [Object] }
+//     ],
+//     status: {}
+//   }
+//   Attributes [
+//     { key: 'http.route', value: { stringValue: '/rolldice' } },
+//     { key: 'express.name', value: { stringValue: '/rolldice' } },
+//     { key: 'express.type', value: { stringValue: 'request_handler' } }
 
 export interface Annotation {
     nodeId: string;
