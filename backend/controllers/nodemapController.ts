@@ -100,7 +100,7 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
 
                     //calculate latency
                     const timediff = span.endTimeUnixNano - span.startTimeUnixNano;
-                    const latency = Number((timediff / 1000000).toFixed(3)) //conversion from nanoseconds to ms
+                    const latency = Number((timediff / 1000000).toFixed(2)) //conversion from nanoseconds to ms
 
                     //check for an exisiting line / incorporate latency
                     const line:Line|undefined = lines.find((l) => l.from === parent.name && l.to === route);
