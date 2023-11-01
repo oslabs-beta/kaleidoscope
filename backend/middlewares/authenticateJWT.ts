@@ -6,13 +6,13 @@ export function authenticateJWT(req: IRequest, res: Response, next: NextFunction
     if(req.body.width && req.body.height) return next(); //skipping auth to see if this is the only error
     const token = req.cookies.jwtToken;
 
-    console.log('token on backend', token);
+    // console.log('token on backend', token);
 
     if (!token) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
     
-    console.log(process.env.JWT_SECRET!);
+    // console.log(process.env.JWT_SECRET!);
 
     jwt.verify(token, process.env.JWT_SECRET!, (err: any, user: any) => {
         if (err) {
