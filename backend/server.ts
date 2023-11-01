@@ -58,9 +58,9 @@ setup();
 
 /* ------------------------------ Routers ------------------------------ */
 
-app.use('/nodemap', authenticateJWT, nodemapRouter);
+app.use('/nodemap', nodemapRouter);
 
-app.use('/annotations', authenticateJWT, annotationRouter);
+app.use('/annotations', annotationRouter);
 
 app.use('/v1/traces', tracesRouter);
 
