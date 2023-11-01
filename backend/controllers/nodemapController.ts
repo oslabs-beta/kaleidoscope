@@ -15,8 +15,8 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
         //const screenwidth:Number = Number(req.params.screenwidth.replace(':', ''));
         const height:number = Number(req.params.height.replace(':', ''));
         //const screenheight:Number = Number(req.params.screenheight.replace(':', ''));
-        // console.log('width', width, 'screenwidth', screenwidth);
-        // console.log('height', height, 'screenheight', screenheight);
+        
+        // console.log(`hit middleware. canvas is ${width}x${height}`)
 
         const border:number = 50; //hardcoded minimum seperation between nodes / edges of the canvas
         const positions:{x:number, y:number}[] = []; //store previously used positions to enforce uniqueness
