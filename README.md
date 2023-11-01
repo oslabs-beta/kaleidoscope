@@ -15,6 +15,11 @@ Kaleidoscope is a developer tool designed to assist developers in visualizing an
 
 ## Prerequisites 
 
+## Technology Stack 
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-3d348b?style=for-the-badge&logo=opentelemetry&logoColor=white)
+
 ## The Developers 
 - Robert Mayo [GitHub](https://github.com/rbrtm984) [LinkedIn](https://www.linkedin.com/in/robertcmayo/)
 - Thomas Hales III [GitHub](https://github.com/thalesIII) [LinkedIn](https://www.linkedin.com/in/thomas-hales-35ab311a3/)
