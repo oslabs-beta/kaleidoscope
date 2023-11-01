@@ -109,5 +109,5 @@
   "include": [
     "src/**/*",
     "declarations.d.ts"
-  ]
+, "src/__tests__/App.test.tsx", "__mocks__"  ]
 }
