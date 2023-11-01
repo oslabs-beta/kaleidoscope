@@ -58,7 +58,8 @@ setup();
 
 /* ------------------------------ Routers ------------------------------ */
 
-app.use('/nodemap', nodemapRouter);
+
+app.use('/nodemap', nodemapRouter); 
 
 app.use('/annotations', annotationRouter);
 
@@ -102,7 +103,7 @@ app.post('/login', async (req: Request, res: Response) => {
         const token = jwt.sign(
             { userId: user._id, email: user.email }, // payload
             process.env.JWT_SECRET!, // secret key
-            { expiresIn: '1h' } // set token to expire in 1 hour
+            { expiresIn: 123960000 } // set token to expire in 1 hour
         ); // create a token
 
         res.cookie('jwtToken', token, {
