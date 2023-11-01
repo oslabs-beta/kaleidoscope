@@ -55,11 +55,13 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
             //find http.route within the attributes property
             // console.log('span', span)
             if(!span.attributes) return; //what do i do with these
-            console.log('ding')
-            const routeProp = span.attributes.find(obj => obj.key === 'http.route');
-            console.log('routeProp', routeProp)
-            if(!routeProp) return res.status(500).send('error while parsing span data');
-            const route = routeProp.value.stringValue;
+            // console.log('ding')
+            // const routeProp = span.attributes.find(obj => obj.key === 'http.route');
+            // console.log('routeProp', routeProp)
+            // if(!routeProp) return;
+            // const route = routeProp.value.stringValue;
+            const route = span.name;
+            if(!route) return //res.status(500).send('error while parsing span data');
 
             //check if we need to create a new node/circle; create if so
             if(!endpoints[route]){ //if endpoint is not yet in our nodes
@@ -81,10 +83,16 @@ const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
                 //pass span data to an existing node
                 endpoints[route].data.push(span);
             }
+
+            console.log('span', span);
+            console.log('nodes', nodes);
             //check if we need to create a new line (if node has parent_id); create if so
             if(span.parentSpanId !== null && span.parentSpanId !== ''){
-                const parent:Circle|undefined = nodes.find((s) => s.id === span.parentSpanId);
+                const parentspan:Span|undefined = spans.find((s) => s.spanId === span.parentSpanId);
+                if(!parentspan) return;
+                const parent:Circle|undefined = nodes.find((n) => n.name === parentspan.name);
                 if(parent){ 
+                    if(parent.name === route) return;
                     // const time1:Date | any = new Date(span.end_time)
                     // const time2:Date | any = new Date(span.start_time)
 

@@ -32,6 +32,17 @@ export interface Span {
             stringValue: string;
         } 
     }[],
+    events: {
+        timeUnixNano: number,
+        name: string,
+        attributes: {
+            key: string,
+            value: {
+                stringValue: string;
+            }
+        }[]
+    }[],
+    
     status: {}
 }
 // a single span {
