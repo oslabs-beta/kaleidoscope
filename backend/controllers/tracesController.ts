@@ -4,7 +4,6 @@ import zlib from 'zlib';
 import * as protobuf from 'protobufjs';
 
 export function decompressRequest(req: Request, res: Response, next: NextFunction) {
-    // console.log('received traces');
     // If the content-encoding is not gzip, proceed without decompression
     if (req.headers['content-encoding'] !== 'gzip') {
         return next();
@@ -38,9 +37,7 @@ export function decompressRequest(req: Request, res: Response, next: NextFunctio
 // this function uses the protobufjs library to decode the data
 export async function decodeTraceData(req: Request, res: Response, next: NextFunction) {
     try {
-        // const protoPath = path.join(__dirname, '../opentelemetry/proto/trace/v1/trace.proto');
         const root = await protobuf.load("./opentelemetry/proto/trace/v1/trace.proto");
-        // const root = await protobuf.load("../opentelemetry/proto/trace/v1/trace.proto")
         const MyMessage = root.lookupType("opentelemetry.proto.trace.v1.TracesData");
 
         if (MyMessage) {
