@@ -7,19 +7,27 @@ import { ThunkDispatch } from 'redux-thunk';
 import { AnyAction } from 'redux';
   
   export default function AnnotationTable() {
-
-    const dispatch: ThunkDispatch<RootState, unknown, AnyAction> = useDispatch();
-    const annotations = useSelector((state: RootState) => state.annotations)
-    // Fetch annotations when component mounts
-    useEffect(() => {
-        dispatch(fetchAnnotations());
-    }, [dispatch]);
+    // Storing annotations in local state
+    const [annotations, setAnnotations] = React.useState<Annotation[]>([]);
     
-    console.log('annotations', annotations)
+    // Load annotations from session storage
+    const loadAnnotations = () => {
+      const storedAnnotations = sessionStorage.getItem('annotations');
+      if (storedAnnotations) {
+        setAnnotations(JSON.parse(storedAnnotations));
+      }
+    }
+
+    // Fetch annotations from session storage when component mounts and whenever it updates
+    useEffect(() => {
+      loadAnnotations();
+    })
+
+    console.log('annotations', annotations);
 
     return (
       <ul role="list" className="divide-y divide-gray-100">
-        {annotations.list.map((annotation) => (
+        {annotations.map((annotation) => (
           <li key={annotation.nodeMapId} className="py-4">
             <div className="flex items-center gap-x-3">
               {/* <img src={item.user.imageUrl} alt="" className="h-6 w-6 flex-none rounded-full bg-gray-800" /> */}

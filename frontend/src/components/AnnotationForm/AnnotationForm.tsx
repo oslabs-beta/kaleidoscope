@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addAnnotation } from '../../features/annotation/annotationSlice';
-import { saveAnnotation } from '../../services/api';
 import { Annotation } from '../../types';
 
 interface AnnotationFormProps {
