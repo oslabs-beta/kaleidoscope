@@ -27,7 +27,7 @@ export default function NodeMap():ReactNode {
     const [selectedLine, setSelectedLine] = useState<Line | null>(null);
     const [lines, setLines] = useState<Line[]>([]);
     const [circles, setCircles] = useState<Circle[]>([]);
-    const [hoverInfo, setHoverInfo] = useState({ x: 0, y: 0, content: {} });
+    const [hoverInfo, setHoverInfo] = useState({ x: 0, y: 0, content: {}});
     const [isHovered, setIsHovered] = useState(false); // hovering 
     const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
 
@@ -41,7 +41,6 @@ export default function NodeMap():ReactNode {
 
         /* ------------------------------ The useEffect Zone------------------------------ */
 
-   
     // Draws canvas
     useEffect(() => {
         // Get spans (trace data) and parse it into circles and lines
@@ -123,7 +122,6 @@ export default function NodeMap():ReactNode {
             });
         };
 
-
         const handleMouseOut = () => {
             if(!circles || !circles.length) return;
             circles.forEach(circle => {
@@ -166,7 +164,7 @@ export default function NodeMap():ReactNode {
                     hoverX = circle.x;
                     hoverY = circle.y - 550;
                     setIsHovered(true);
-                    setHoverInfo({x:hoverX, y:hoverY, content: circle.data})
+                    setHoverInfo({x:hoverX, y:hoverY, content: circle})
                 }
             });
           }else {
@@ -196,6 +194,7 @@ export default function NodeMap():ReactNode {
 
         // Add event listeners
         addEventListeners();
+        
         if (canvasContext && circles && circles.length) {
             draw(canvasContext, canvas, circles, lines);
         } else {
@@ -299,7 +298,7 @@ export default function NodeMap():ReactNode {
                 </div>
                 {/* Conditional rendering of AnnotationMenu */}
                 {showAnnotationMenu && <AnnotationMenu open={showAnnotationMenu} setOpen={setShowAnnotationMenu}/>}
-                {isHovered && <NodeHover data = {hoverInfo}/>}
+                {isHovered && <NodeHover data={hoverInfo} setIsHovered={setIsHovered} />}
                 {/* {<NewAnnotationForm/>} */}
             </div>
         </div>

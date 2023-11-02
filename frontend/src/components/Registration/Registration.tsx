@@ -149,7 +149,6 @@ export default function Registration() {
                 </button>
               </div>
               {message && <p>{message}</p>} {/* Display the feedback */}
-              <button onClick={() => navigate('/nodemap')}>Test Navigate</button>
             </form>
           </div>
         </div>

@@ -1,28 +1,5 @@
 import { Circle, Line } from '../../types';
 
-
-
-// Function to draw circle on canvas
-// const drawCircle = (canvasContext: CanvasRenderingContext2D, circle: Circle) => {
-
-//     const gradient = canvasContext.createRadialGradient(
-//         circle.x, circle.y, 0, circle.x, circle.y, circle.radius
-//     );
-    
-//     gradient.addColorStop(1, 'indigo'); // Inner color
-//     gradient.addColorStop(0, 'purple'); // Outer color
-    
-//     canvasContext.fillStyle = gradient;
-
-
-
-    
-//     canvasContext.beginPath();
-//     canvasContext.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
-//     canvasContext.fill();
-//     canvasContext.closePath();
-// };
-
 const drawCircle = (canvasContext: CanvasRenderingContext2D, circle: Circle) => {
     const centerX = circle.x;
     const centerY = circle.y;
@@ -119,7 +96,7 @@ export const draw = (
 
         // Display label
         canvasContext.font = '12px Arial';
-        canvasContext.fillStyle = 'red';
+        canvasContext.fillStyle = line.latency < 100 ? 'green' : 'red'; //over 100ms --> red latency
         canvasContext.fillText(
             `avg latency: ${line.latency}ms`, 
         labelX, labelY);
@@ -136,7 +113,7 @@ export const draw = (
         // Display trace data on the circle
         // needs to be reconfigured w/ store
         canvasContext.font = '12px Arial';
-        canvasContext.fillStyle = 'white';
-        canvasContext.fillText(circle.name, circle.x - 15, circle.y);
+        canvasContext.fillStyle = 'darkslategrey';
+        canvasContext.fillText(circle.name, circle.x - (circle.name.length * 2), circle.y - 22);
     });
 };
