@@ -8,7 +8,7 @@ services:
     networks:
       - jaeger-example
     volumes:
-      - /Users/robertmayo/Development/Codesmith/projects/spiritsnail/config/otel-collector-config.yaml:/etc/otel/config.yaml
+      - ../config/otel-collector-config.yaml:/etc/otel/config.yaml
     command: ["--config=/etc/otel/config.yaml"]
   hotrod:
     image: jaegertracing/example-hotrod:latest
