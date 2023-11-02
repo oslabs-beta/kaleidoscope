@@ -2,7 +2,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)
 ![Release: 1.0](https://img.shields.io/badge/Release-12.0-purple)
 
-# ![Kaleidoscope logo](./images/kaleidoscope.png)
+# ![Kaleidoscope logo](frontend/src/images/kaleidoscope.png)
 
 
 # About 
