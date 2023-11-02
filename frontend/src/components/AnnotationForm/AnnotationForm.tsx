@@ -21,6 +21,11 @@ export const AnnotationForm: React.FC<AnnotationFormProps> = ({ x, y, onSave, on
 
   const dispatch = useDispatch();
 
+  // Example: Storing an annotation
+  function saveAnnotation(key: string, annotation: Annotation) {
+    sessionStorage.setItem(key, JSON.stringify(annotation));
+  }
+
    // Function to handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,13 +39,18 @@ export const AnnotationForm: React.FC<AnnotationFormProps> = ({ x, y, onSave, on
       y,
     };
 
-    const response = await saveAnnotation(newAnnotation);
-    console.log('response', response);
-    if (response) {
+    try {
+      // Save annotation to session storage 
+      const annotations = JSON.parse(sessionStorage.getItem('annotations') || '[]');
+      annotations.push(newAnnotation);
+      sessionStorage.setItem('annotations', JSON.stringify(annotations));
+
       dispatch(addAnnotation(newAnnotation));
+
       onSave(newAnnotation);
-    } else {
-      console.log("Failed to save annotation:", response.error);
+      console.log('Annotation saved:', newAnnotation);
+    } catch (err) {
+      console.error('Failed to save annotation:', err);
     }
   };
 
