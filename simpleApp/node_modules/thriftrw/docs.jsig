@@ -1,5 +1,0 @@
-/*  This is a jsig notation of your interface.
-    https://github.com/jsigbiz/spec
-*/
-
-thriftrw : (arg: Any) => void

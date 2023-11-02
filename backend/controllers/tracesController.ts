@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import fs from 'fs';
 import zlib from 'zlib';
 import * as protobuf from 'protobufjs';
+import { Span } from '../types';
 
 export function decompressRequest(req: Request, res: Response, next: NextFunction) {
     // If the content-encoding is not gzip, proceed without decompression
@@ -17,7 +18,7 @@ export function decompressRequest(req: Request, res: Response, next: NextFunctio
     });
 
     req.on('end', () => {
-        const buffer = Buffer.concat(compressedData);
+        const buffer: Buffer = Buffer.concat(compressedData);
         
         zlib.gunzip(buffer, (err, decompressedData) => {
             if (err) {
@@ -26,7 +27,7 @@ export function decompressRequest(req: Request, res: Response, next: NextFunctio
             }
 
             req.body = decompressedData;
-            console.log('decompression done')
+            console.log('Decompression successful!')
             next();
         });
     });
@@ -37,12 +38,12 @@ export function decompressRequest(req: Request, res: Response, next: NextFunctio
 // this function uses the protobufjs library to decode the data
 export async function decodeTraceData(req: Request, res: Response, next: NextFunction) {
     try {
-        const root = await protobuf.load("./opentelemetry/proto/trace/v1/trace.proto");
-        const MyMessage = root.lookupType("opentelemetry.proto.trace.v1.TracesData");
+        const root: protobuf.Root = await protobuf.load("./opentelemetry/proto/trace/v1/trace.proto");
+        const MyTraces: protobuf.Type = root.lookupType("opentelemetry.proto.trace.v1.TracesData");
 
-        if (MyMessage) {
-            const message = MyMessage.decode(req.body);
-            const object = MyMessage.toObject(message, {
+        if (MyTraces) {
+            const message: protobuf.Message = MyTraces.decode(req.body);
+            const object = MyTraces.toObject(message, {
                 longs: String,
                 enums: String,
                 bytes: String
@@ -58,7 +59,7 @@ export async function decodeTraceData(req: Request, res: Response, next: NextFun
 
 export async function printTraces(req: Request, res: Response, next: NextFunction) {
     try {
-        console.log('req.body', req.body, '\n');
+        // This console log allows us to confirm the shape of the incoming data.
         console.log('req.body.decodedData.resourceSpans[0].scopeSpans[0]', req.body.decodedData.resourceSpans[0].scopeSpans[0]);
         return next();
     } catch (err) {
@@ -68,36 +69,34 @@ export async function printTraces(req: Request, res: Response, next: NextFunctio
 
 export function storeTraces(req: Request, res: Response, next: NextFunction) {
     // read the existing data from the file
-    let existingData = [];
+    let existingData: Span[] = [];
     try {
+        // Trace store is an intermediary between our app and the database.
+        // But right now it's also the database itself.
         const dataBuffer = fs.readFileSync('./../tracestore.json');
         existingData = JSON.parse(dataBuffer.toString());
     } catch (error) {
         console.error('Error reading from file:', error);
         return;
     }
-    // console.log('req.body.decodedData.resourceSpans', req.body.decodedData.resourceSpans.scopeSpans);
-    // const scopeSpans = req.body.decodedData.resourceSpans.map((scopeSpan: any)=>{
-    //     return scopeSpan.scopeSpans[0].spans;
-    // })
-    // console.log('scopeSpans', scopeSpans);
+    // ResourceSpans needs a new type w/ its own interface
     let newData = req.body.decodedData.resourceSpans.map((rSpan: any)=>{
+        // Scope Spans also needs another interface type
         return rSpan.scopeSpans.map((sSpan: any)=>{
             return sSpan.spans;            
         });
     })
+
+    // Flatten the array
     newData = newData.flat(2);
-    // console.log('old at i0:', existingData[0])
-    // console.log('old.length:', existingData.length)
-    // console.log('new', newData)
-    // add new data to the existing data
+
+    // Add new data to the existing data
     const combined = existingData.concat(newData);
 
-    // write the updated data back to the file
+    // Write the updated data back to the file
     try {
         fs.writeFileSync('./../tracestore.json', JSON.stringify(combined, null, 2).toString());
-        // fs.writeFileSync('./../tracestore.json', '');
-        // console.log('Stored successfully');
+        console.log('Stored successfully');
     } catch (error) {
         console.error('Error storing traces:', error);
         return res.status(500).send('Error storing traces');

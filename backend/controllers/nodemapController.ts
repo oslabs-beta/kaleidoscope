@@ -1,4 +1,3 @@
-const db = require('../models/annotationModel.ts');
 const fs = require('fs');
 import { Circle, Line, Span } from '../types';
 import { Request, Response, NextFunction } from 'express'
