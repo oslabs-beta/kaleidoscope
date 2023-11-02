@@ -1,125 +1,89 @@
-const db = require('../models/annotationModel.ts');
 const fs = require('fs');
 import { Circle, Line, Span } from '../types';
 import { Request, Response, NextFunction } from 'express'
 
+const BORDER_DISTANCE = 50;  // Minimum separation between nodes / edges of the canvas
+const DEFAULT_NODE_RADIUS = 20;
+
 const getSpans = (req: Request, res: Response, next: NextFunction) => {
-    // console.log('in the middleware...')
+    // Load test data from file
     res.locals.spans = JSON.parse(fs.readFileSync('../tracestore.json').toString()) //test data
-    console.log('spans length', res.locals.spans.length)
     return next();
 }
 
+const randomPositionWithinBounds = (maxWidth: number, maxHeight: number, existingPositions: {x:number, y:number}[]): [number, number] => {
+    // Generate a random number within a specified range and distance from border
+    const random = (num: number): number => {
+        const result = Math.ceil(Math.random() * num);
+        if (result < BORDER_DISTANCE || result > num - BORDER_DISTANCE) return random(num);
+        return result;
+    };
+
+    const x = random(maxWidth);
+    const y = random(maxHeight);
+
+    for (const pos of existingPositions) {
+        const distance = Math.sqrt(Math.pow((x - pos.x), 2) + Math.pow((y - pos.y), 2));
+        if (distance < BORDER_DISTANCE) return randomPositionWithinBounds(maxWidth, maxHeight, existingPositions);
+    }
+
+    return [x, y];
+};
+
+
 const makeNodes = async (req: Request, res: Response, next: NextFunction) => {
-    console.log('res.locals.spans', res.locals.spans.length)
-    // Get spans (trace data) and parse it into circles and lines
-        const width:number = Number(req.params.width.replace(':', ''));
-        //const screenwidth:Number = Number(req.params.screenwidth.replace(':', ''));
-        const height:number = Number(req.params.height.replace(':', ''));
-        //const screenheight:Number = Number(req.params.screenheight.replace(':', ''));
-        
-        // console.log(`hit middleware. canvas is ${width}x${height}`)
+        const width = Number(req.params.width.replace(':', ''));
+        const height = Number(req.params.height.replace(':', ''));
 
-        const border:number = 50; //hardcoded minimum seperation between nodes / edges of the canvas
-        const positions:{x:number, y:number}[] = []; //store previously used positions to enforce uniqueness
-        const randomPOS = (w:number, h:number):number[] => {
-            const random = (num:number):number => {
-                const result = Math.ceil(Math.random() * num)
-                if(result < border || result > num - border){ 
-                    //recalculate unacceptable locations according to border variable
-                    return random(num);
-                }else return result;
-            }
-
-            const width = random(w);
-            const height = random(h)
-            for(const pos of positions){
-                const distance = Math.sqrt((width - pos.x)) ** 2 + (height - pos.y) ** 2;
-                if(distance < border) {
-                    return randomPOS(w, h);
-                    //recalculate unacceptable locations according to border variable
-                }
-            }
-            return [width, height]
-        }
-
-
-        const spans:Span[] = res.locals.spans;
-        // console.log('spans', spans)
-        const defaultNodeRadius = 20;
-        const endpoints:{ [key: string]: any }  = {};
-        const nodes:Circle[] = [];
-        const lines:Line[] = [];
+        const existingPositions: {x:number, y:number}[] = [];
+        const spans: Span[] = res.locals.spans;
+        const endpoints: { [key: string]: Circle } = {};
+        const nodes: Circle[] = [];
+        const lines: Line[] = [];
 
         spans.forEach(span => {
-            //find http.route within the attributes property
-            // console.log('span', span)
-            if(!span.attributes) return; //what do i do with these
-            // console.log('ding')
-            // const routeProp = span.attributes.find(obj => obj.key === 'http.route');
-            // console.log('routeProp', routeProp)
-            // if(!routeProp) return;
-            // const route = routeProp.value.stringValue;
-            const route = span.name;
-            if(!route) return //res.status(500).send('error while parsing span data');
+            if(!span.attributes || !span.name) return; 
 
             //check if we need to create a new node/circle; create if so
-            if(!endpoints[route]){ //if endpoint is not yet in our nodes
-                const [x, y] = randomPOS(width, height); //generate a position for the new node
+            if(!endpoints[span.name]){ //if endpoint is not yet in our nodes
+                const [x, y] = randomPositionWithinBounds(width, height, existingPositions);
                 nodes.push({
-                    name: route,
+                    name: span.name,
                     id: span.spanId,
                     x: x,
                     y: y,
-                    radius: defaultNodeRadius,
+                    radius: DEFAULT_NODE_RADIUS,
                     isDragging: false,
                     isHovered: false, 
                     data: [span]
                 })
 
-                //keep references to nodes at each unique endpoint
-                endpoints[route] = nodes[nodes.length - 1];
-            }else{
-                //pass span data to an existing node
-                endpoints[route].data.push(span);
+                endpoints[span.name] = nodes[nodes.length - 1];
+            } else {
+                endpoints[span.name].data.push(span);
             }
 
-            console.log('span', span);
-            console.log('nodes', nodes);
-            //check if we need to create a new line (if node has parent_id); create if so
-            if(span.parentSpanId !== null && span.parentSpanId !== ''){
-                const parentspan:Span|undefined = spans.find((s) => s.spanId === span.parentSpanId);
-                if(!parentspan) return;
-                const parent:Circle|undefined = nodes.find((n) => n.name === parentspan.name);
-                if(parent){ 
-                    if(parent.name === route) return;
-                    // const time1:Date | any = new Date(span.end_time)
-                    // const time2:Date | any = new Date(span.start_time)
+            // Create lines connecting nodes based on parent relationships
+            if(span.parentSpanId) {
+                const parentSpan = spans.find((s) => s.spanId === span.parentSpanId);
+                if(!parentSpan) return;
 
-                    // console.log('time1', time1, 'time2', time2, 'latency', time1.getTime() - time2.getTime());
-
-                    //calculate latency
-                    const timediff = span.endTimeUnixNano - span.startTimeUnixNano;
-                    const latency = Number((timediff / 1000000).toFixed(3)) //conversion from nanoseconds to ms
+                const parent = nodes.find((n) => n.name === parentSpan.name);
+                if(parent && parent.name !== span.name){ 
+                    const latency = (span.endTimeUnixNano - span.startTimeUnixNano) / 1000000;  // Convert ns to ms
+                    const existingLine = lines.find((l) => l.from === parent.name && l.to === span.name);
 
                     //check for an exisiting line / incorporate latency
-                    const line:Line|undefined = lines.find((l) => l.from === parent.name && l.to === route);
-                    if(line) {
-                        line.requests++;
-                        const weight:number = 1 / line.requests;
-                        line.latency = Number(((line.latency * weight) + latency * (1 - weight)).toFixed(3)); //calculate avg latency
+                    if(existingLine) {
+                        const weight = 1 / existingLine.requests;
+                        existingLine.latency = Number((existingLine.latency * weight + latency * (1 - weight)).toFixed(3));
+                        existingLine.requests++;
                     }else{
-                        lines.push({  //create a new line
-                            from: parent.name,
-                            to: route,
-                            latency: latency,
-                            requests: 1
-                        })
+                        lines.push({ from: parent.name, to: span.name, latency, requests: 1 });
                     }
                 }
             }
-        })
-        console.log('nodes', nodes, 'lines', lines)
+        });
         res.locals.nodes = [nodes, lines]; //store nodes and lines in res.locals 
         return next();
 }
