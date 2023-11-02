@@ -13,6 +13,7 @@ Kaleidoscope is a developer tool designed to assist developers in visualizing an
 ## Getting Started
 
 
+
 ## Prerequisites 
 
 ## Technology Stack 
@@ -21,7 +22,7 @@ Kaleidoscope is a developer tool designed to assist developers in visualizing an
 ![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-3d348b?style=for-the-badge&logo=opentelemetry&logoColor=white)
 
 ## The Developers 
-- Robert Mayo [GitHub](https://github.com/rbrtm984) [LinkedIn](https://www.linkedin.com/in/robertcmayo/)
-- Thomas Hales III [GitHub](https://github.com/thalesIII) [LinkedIn](https://www.linkedin.com/in/thomas-hales-35ab311a3/)
-- Herman Chen [GitHub](https://github.com/HermanChen4) [LinkedIn](https://www.linkedin.com/in/herman-chen-839339240/)
-- Christopher Jettoo [GitHub](https://github.com/Christopher-Jettoo) [LinkedIn](https://www.linkedin.com/in/christopher-j-1a240b169/)
+- Robert Mayo | [GitHub](https://github.com/rbrtm984) | [LinkedIn](https://www.linkedin.com/in/robertcmayo/)
+- Thomas Hales III | [GitHub](https://github.com/thalesIII) | [LinkedIn](https://www.linkedin.com/in/thomas-hales-35ab311a3/)
+- Herman Chen | [GitHub](https://github.com/HermanChen4) | [LinkedIn](https://www.linkedin.com/in/herman-chen-839339240/)
+- Christopher Jettoo | [GitHub](https://github.com/Christopher-Jettoo) | [LinkedIn](https://www.linkedin.com/in/christopher-j-1a240b169/)

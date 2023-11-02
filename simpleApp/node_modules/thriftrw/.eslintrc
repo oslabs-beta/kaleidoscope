@@ -1,7 +1,0 @@
-{
-    "rules": {
-        "max-len": [1, 120],
-        "max-statements": [1, 30],
-        "curly": 0
-    }
-}

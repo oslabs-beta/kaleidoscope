@@ -41,7 +41,6 @@ export default function NodeMap():ReactNode {
 
         /* ------------------------------ The useEffect Zone------------------------------ */
 
-   
     // Draws canvas
     useEffect(() => {
         // Get spans (trace data) and parse it into circles and lines
@@ -195,6 +194,7 @@ export default function NodeMap():ReactNode {
 
         // Add event listeners
         addEventListeners();
+        
         if (canvasContext && circles && circles.length) {
             draw(canvasContext, canvas, circles, lines);
         } else {

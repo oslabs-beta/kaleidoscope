@@ -1,28 +1,5 @@
 import { Circle, Line } from '../../types';
 
-
-
-// Function to draw circle on canvas
-// const drawCircle = (canvasContext: CanvasRenderingContext2D, circle: Circle) => {
-
-//     const gradient = canvasContext.createRadialGradient(
-//         circle.x, circle.y, 0, circle.x, circle.y, circle.radius
-//     );
-    
-//     gradient.addColorStop(1, 'indigo'); // Inner color
-//     gradient.addColorStop(0, 'purple'); // Outer color
-    
-//     canvasContext.fillStyle = gradient;
-
-
-
-    
-//     canvasContext.beginPath();
-//     canvasContext.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
-//     canvasContext.fill();
-//     canvasContext.closePath();
-// };
-
 const drawCircle = (canvasContext: CanvasRenderingContext2D, circle: Circle) => {
     const centerX = circle.x;
     const centerY = circle.y;
