@@ -4,7 +4,9 @@
 
 # Kaleidoscope
 
-<img src="frontend/src/images/kaleidoscope.png" alt="Kaleidoscope logo" width="500" height="500">
+<div style="text-align: center;">
+  <img src="frontend/src/images/kaleidoscope.png" alt="Kaleidoscope logo" width="500" height="500">
+</div>
 
 # About 
 Kaleidoscope, an open-source observability tool, empowers developers to visually map and annotate the backend structure of web applications. With Kaleidoscope, developers can create a distinctive node map of their project, analyze request latency across endpoints, and pinpoint performance bottlenecks in the backend.
