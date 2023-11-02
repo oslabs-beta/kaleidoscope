@@ -15,27 +15,31 @@ Please read the [website](www.google.com) and [medium](https://medium.com/@rbrtm
 ### Upcoming Features
 - Node map sandbox
 - Trace movement visualization
-## Getting Started
-
-
 
 ## Prerequisites 
-- [ ] Opentelemetry collector
 - [ ] Opentelemetry instrumentation integrated within your app
+- Instrumentation must be configured to export to a collector with the following environment variable: 
+```
+OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+```
 
 *NOTE* If application is writtten in Node.js it can be instrumented automatically by running the application while requiring [instrumentation.js](https://github.com/oslabs-beta/Kaleidoscope/blob/dev/instrumentation.js)
 
 ```
-$node --require ./instrumentation.js <entry point to your application>
+$ node --require ./instrumentation.js <entry point to your application>
 ```
 
-___
-# Installing OpenTelemetry Collector 
-- Instructions to install OpenTelemetry Collector [here](https://opentelemetry.io/docs/collector/installation/)
-
-
-
-
+## Getting Started
+- Once your app is correctly instrumented to emit telemetry data, start the OTel collector in a Docker container:
+```
+$ cd otel-collector && docker compose up
+```
+- Data should now be transmitted to Kaleidoscope as requests travel through your app
+- Open Kaleidoscope from the root directory:
+```
+$ npm run start-dev
+```
+- Register / Sign in to generate a node map of your app's latest trace data
 
 ## Technology Stack 
 ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
