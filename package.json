@@ -3,11 +3,16 @@
   "version": "1.0.0",
   "description": "",
   "main": "electron.ts",
+  "workspaces": [
+    "frontend",
+    "backend",
+    "electron"
+  ],
   "scripts": {
     "start": "cd electron && electron .",
-    "start-react": "cd frontend && npm start",
-    "start-express": "cd backend && npm start",
-    "start-express-dev": "cd backend && npm run dev",
+    "start-react": "npm start -w frontend",
+    "start-express": "npm start -w backend",
+    "start-express-dev": "npm run dev -w backend",
     "start-all": "npm run start-react & npm run start-express",
     "start-dev": "npm run start-react & npm run start-express-dev"
   },
