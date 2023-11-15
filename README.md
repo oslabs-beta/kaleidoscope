@@ -18,6 +18,16 @@ Please read the [website](www.google.com) and [medium](https://medium.com/@rbrtm
 ### Upcoming Features
 - Node map sandbox
 - Trace movement visualization
+- Implement map saving and users saving maps
+- Populating the annotations on the map so they correspond to their location in the architecture
+- Rework Node Map to be in D3 instead of HTML Canvas
+- Account information after log in
+- OAuth
+- Hosted demo of application
+- Hosted Splash Page
+- Individual trace information (waterfall?)
+- "Refresh" button to find new traces for system
+- Ease of use (npm package?)
 
 ## Prerequisites 
 - [ ] Opentelemetry instrumentation integrated within your app
