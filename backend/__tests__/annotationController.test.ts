@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { Annotation } from "../types";
 import annotationModel from "../models/annotationModel";
 import {
   getAnnotationById,
@@ -180,6 +179,103 @@ describe("updateAnnotation", () => {
     );
 
     await updateAnnotation(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
+  });
+});
+
+describe("createAnnotation", () => {
+  let req: Request;
+  let res: Response;
+
+  beforeEach(() => {
+    req = {
+      body: {
+        /* provide the necessary request body here */
+      },
+    } as unknown as Request;
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    } as unknown as Response<any, Record<string, any>>;
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should create a new annotation and return 201 status code", async () => {
+    const mockNewAnnotationId = 1;
+    (annotationModel.addAnnotation as jest.Mock).mockResolvedValueOnce(
+      mockNewAnnotationId
+    );
+
+    await createAnnotation(req, res);
+
+    expect(annotationModel.addAnnotation).toHaveBeenCalledWith(req.body);
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({ id: mockNewAnnotationId });
+  });
+
+  it("should return 500 status code if creating the annotation fails", async () => {
+    const errorMessage = "Failed to create annotation.";
+    (annotationModel.addAnnotation as jest.Mock).mockRejectedValueOnce(
+      new Error(errorMessage)
+    );
+
+    await createAnnotation(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
+  });
+});
+
+describe("deleteAnnotation", () => {
+  let req: Request;
+  let res: Response;
+
+  beforeEach(() => {
+    req = {
+      params: { id: "1" },
+    } as unknown as Request;
+    res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+      end: jest.fn().mockReturnThis(),
+    } as unknown as Response<any, Record<string, any>>;
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should delete the annotation and return 204 status code", async () => {
+    (annotationModel.deleteAnnotation as jest.Mock).mockResolvedValueOnce(undefined);
+    await deleteAnnotation(req, res);
+
+    expect(annotationModel.deleteAnnotation).toHaveBeenCalledWith(1);
+    expect(res.status).toHaveBeenCalledWith(204);
+    expect(res.end).toHaveBeenCalled();
+  });
+
+  it("should return 400 status code if ID is not a number", async () => {
+    req.params.id = "invalid";
+
+    await deleteAnnotation(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith("Invalid ID format");
+  });
+
+  it("should return 500 status code if deleting the annotation fails", async () => {
+    const errorMessage = "Failed to delete annotation.";
+    (annotationModel.deleteAnnotation as jest.Mock).mockRejectedValueOnce(
+      new Error(errorMessage)
+    );
+
+    await deleteAnnotation(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
