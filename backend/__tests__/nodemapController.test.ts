@@ -1,9 +1,27 @@
 import { Request, Response, NextFunction } from "express";
-import { makeNodes } from "../controllers/nodemapController";
 import { ParamsDictionary } from "express-serve-static-core";
 import { ParsedQs } from "qs";
-import { randomPositionWithinBounds } from "../controllers/nodemapController";
+import { getSpans, makeNodes, randomPositionWithinBounds } from "../controllers/nodemapController";
 import * as nodemapController from "../controllers/nodemapController";
+import fs from 'fs';
+
+jest.mock('fs');
+
+describe('getSpans', () => {
+  it('should load spans from file', () => {
+    const mockJson = [{ id: '1' }, { id: '2' }];
+    (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(mockJson));
+
+    const req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>> = {} as Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>;
+    const res: Response<any, Record<string, any>> = { locals: {} } as Response<any, Record<string, any>>;
+    const next = jest.fn();
+
+    getSpans(req, res, next);
+
+    expect(res.locals.spans).toEqual(mockJson);
+    expect(next).toHaveBeenCalled();
+  });
+});
 
 describe("nodemapController", () => {
   let req: Request;
