@@ -6,10 +6,13 @@ const BORDER_DISTANCE = 50; // Minimum separation between nodes / edges of the c
 const DEFAULT_NODE_RADIUS = 20;
 
 const getSpans = (req: Request, res: Response, next: NextFunction) => {
-  // Load test data from file
-  res.locals.spans = JSON.parse(
-    fs.readFileSync("../tracestore.json").toString()
-  ); //test data
+  try {
+    // Load test data from file
+    const data = fs.readFileSync("../tracestore.json").toString();
+    res.locals.spans = JSON.parse(data);
+  } catch (error) {
+    return next(error);
+  }
   return next();
 };
 
@@ -42,11 +45,16 @@ export const makeNodes = (req: Request, res: Response, next: NextFunction) => {
   const width = Number(req.params.width.replace(":", ""));
   const height = Number(req.params.height.replace(":", ""));
 
+  if (isNaN(width) || isNaN(height)) {
+    return next(new Error("Invalid width or height parameters"));
+  }
+
   const existingPositions: { x: number; y: number }[] = [];
   const spans: Span[] = res.locals.spans;
   const endpoints: { [key: string]: Circle } = {};
   const nodes: Circle[] = [];
   const lines: Line[] = [];
+  
   try {
     spans.forEach((span) => {
       if (!span.attributes || !span.name) return;
