@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import { Annotation } from '../types';
 import annotationModel from '../models/annotationModel';
-import { getAnnotations, createAnnotation, updateAnnotation, deleteAnnotation,  } from '../controllers/annotationController';
+import { getAnnotationById, getAnnotations, createAnnotation, updateAnnotation, deleteAnnotation,  } from '../controllers/annotationController';
 
 jest.mock('../models/annotationModel');
+
+describe()
 
 describe('getAnnotations', () => {
   let req: Request;

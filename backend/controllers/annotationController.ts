@@ -1,6 +1,26 @@
 import annotationModel from '../models/annotationModel';
 import { Request, Response } from 'express'
 
+export async function getAnnotationById(req: Request, res: Response) {
+    try {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: 'ID must be a number' });
+      return;
+    }
+
+    const annotation = await annotationModel.getAnnotationById(id);
+    if (!annotation) {
+      res.status(404).json({ error: 'Annotation not found' });
+      return;
+    }
+
+    res.status(200).json(annotation);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch annotation' });
+  }
+}
+
 export async function getAnnotations(req: Request, res: Response) {
     try {
         const annotations = await annotationModel.getAllAnnotations();
