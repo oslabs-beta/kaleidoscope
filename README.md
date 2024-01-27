@@ -5,7 +5,7 @@
 # Kaleidoscope 🔭
 
 ## About 
-Kaleidoscope is an innovative open-source observability tool designed for developers to visually explore and enhance the backend architecture of web applications. It provides a unique node map visualization, enabling the analysis of request latency across various endpoints and identification of performance bottlenecks.
+Kaleidoscope is an open-source observability tool designed for developers to explore and enhance the backend architecture of web applications. It provides a unique node map visualization, enabling the analysis of request latency across various endpoints and identification of performance bottlenecks.
 
 Please read the [website](www.google.com) and [medium](https://medium.com/@rbrtm984/a8f0f763de83) article for more information.
 ### Features
