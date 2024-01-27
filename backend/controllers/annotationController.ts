@@ -1,4 +1,4 @@
-import * as annotationModel from '../models/annotationModel';
+import annotationModel from '../models/annotationModel';
 import { Request, Response } from 'express'
 
 export async function getAnnotations(req: Request, res: Response) {

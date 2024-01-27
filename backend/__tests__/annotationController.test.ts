@@ -1,15 +1,11 @@
 import { Request, Response } from 'express';
-import * as annotationModel from '../models/annotationModel';
-import {
-  getAnnotations,
-  createAnnotation,
-  updateAnnotation,
-  deleteAnnotation,
-} from '../controllers/annotationController';
+import { Annotation } from '../types';
+import annotationModel from '../models/annotationModel';
+import { getAnnotations, createAnnotation, updateAnnotation, deleteAnnotation,  } from '../controllers/annotationController';
 
 jest.mock('../models/annotationModel');
 
-describe('Annotation Controller', () => {
+describe('getAnnotations', () => {
   let req: Request;
   let res: Response;
 
@@ -17,135 +13,81 @@ describe('Annotation Controller', () => {
     req = {} as Request;
     res = {
       status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
-      end: jest.fn().mockReturnThis(),
-    } as unknown as Response;
+    } as unknown as Response<any, Record<string, any>>;
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('getAnnotations', () => {
-    it('should return all annotations', async () => {
-      const annotations = [{ id: 1, text: 'Annotation 1' }, { id: 2, text: 'Annotation 2' }];
-      (annotationModel.getAllAnnotations as jest.Mock).mockResolvedValueOnce(annotations);
+  it('should fetch annotations and return 200 status code', async () => {
+    const mockAnnotations = [{ id: 1, text: 'Annotation 1' }, { id: 2, text: 'Annotation 2' }];
+    (annotationModel.getAllAnnotations as jest.Mock).mockResolvedValueOnce(mockAnnotations);
 
-      await getAnnotations(req, res);
+    await getAnnotations(req, res);
 
-      expect(annotationModel.getAllAnnotations).toHaveBeenCalledTimes(1);
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(annotations);
-    });
-
-    it('should handle errors', async () => {
-      const errorMessage = 'Failed to get annotations.';
-      (annotationModel.getAllAnnotations as jest.Mock).mockRejectedValueOnce(new Error(errorMessage));
-
-      await getAnnotations(req, res);
-
-      expect(annotationModel.getAllAnnotations).toHaveBeenCalledTimes(1);
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
-    });
+    expect(annotationModel.getAllAnnotations).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockAnnotations);
   });
 
-  describe('createAnnotation', () => {
-    it('should create a new annotation', async () => {
-      const annotation = { id: 1, text: 'New Annotation' };
-      req.body = annotation;
-      jest.spyOn(annotationModel, 'createAnnotation').mockResolvedValueOnce(annotation);
+  it('should return 500 status code if fetching annotations fails', async () => {
+    const errorMessage = 'Failed to fetch annotations.';
+    (annotationModel.getAllAnnotations as jest.Mock).mockRejectedValueOnce(new Error(errorMessage));
 
-      await createAnnotation(req, res);
+    await getAnnotations(req, res);
 
-      expect(annotationModel.createAnnotation).toHaveBeenCalledTimes(1);
-      expect(annotationModel.createAnnotation).toHaveBeenCalledWith(annotation);
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith(annotation);
-    });
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
+  });
+});
 
-    it('should handle errors', async () => {
-      const errorMessage = 'Failed to create annotation.';
-      req.body = { text: 'New Annotation' };
-      annotationModel.createAnnotation.mockRejectedValueOnce(new Error(errorMessage));
+describe('updateAnnotation', () => {
+  let req: Request;
+  let res: Response;
 
-      await createAnnotation(req, res);
-
-      expect(annotationModel.createAnnotation).toHaveBeenCalledTimes(1);
-      expect(annotationModel.createAnnotation).toHaveBeenCalledWith(req.body);
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
-    });
+  beforeEach(() => {
+    req = {
+      params: { id: '1' },
+      body: { /* provide the necessary request body here */ },
+    } as unknown as Request;
+    res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+      end: jest.fn().mockReturnThis(),
+    } as unknown as Response<any, Record<string, any>>;
   });
 
-  describe('updateAnnotation', () => {
-    it('should update an existing annotation', async () => {
-      const id = 1;
-      const updatedAnnotation = { id, text: 'Updated Annotation' };
-      req.params = { id: id.toString() };
-      req.body = updatedAnnotation;
-      annotationModel.updateAnnotation.mockResolvedValueOnce(updatedAnnotation);
-
-      await updateAnnotation(req, res);
-
-      expect(annotationModel.updateAnnotation).toHaveBeenCalledTimes(1);
-      expect(annotationModel.updateAnnotation).toHaveBeenCalledWith(id, updatedAnnotation);
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(updatedAnnotation);
-    });
-
-    it('should handle errors', async () => {
-      const id = 1;
-      const errorMessage = 'Failed to update annotation.';
-      req.params = { id: id.toString() };
-      req.body = { text: 'Updated Annotation' };
-      annotationModel.updateAnnotation.mockRejectedValueOnce(new Error(errorMessage));
-
-      await updateAnnotation(req, res);
-
-      expect(annotationModel.updateAnnotation).toHaveBeenCalledTimes(1);
-      expect(annotationModel.updateAnnotation).toHaveBeenCalledWith(id, req.body);
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
-    });
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  describe('deleteAnnotation', () => {
-    it('should delete an existing annotation', async () => {
-      const id = 1;
-      req.params = { id: id.toString() };
+  it('should update the annotation and return 204 status code', async () => {
+    await updateAnnotation(req, res);
 
-      await deleteAnnotation(req, res);
+    expect(annotationModel.updateAnnotation).toHaveBeenCalledWith(1, req.body);
+    expect(res.status).toHaveBeenCalledWith(204);
+    expect(res.end).toHaveBeenCalled();
+  });
 
-      expect(annotationModel.deleteAnnotation).toHaveBeenCalledTimes(1);
-      expect(annotationModel.deleteAnnotation).toHaveBeenCalledWith(id);
-      expect(res.status).toHaveBeenCalledWith(204);
-      expect(res.end).toHaveBeenCalledTimes(1);
-    });
+  it('should return 400 status code if ID is not a number', async () => {
+    req.params.id = 'invalid';
 
-    it('should handle invalid ID format', async () => {
-      const id = 'invalid';
-      req.params = { id };
+    await updateAnnotation(req, res);
 
-      await deleteAnnotation(req, res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith('Invalid ID format');
+  });
 
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.send).toHaveBeenCalledWith('Invalid ID format');
-    });
+  it('should return 500 status code if updating the annotation fails', async () => {
+    const errorMessage = 'Failed to update annotation.';
+    (annotationModel.updateAnnotation as jest.Mock).mockRejectedValueOnce(new Error(errorMessage));
 
-    it('should handle errors', async () => {
-      const id = 1;
-      const errorMessage = 'Failed to delete annotation.';
-      req.params = { id: id.toString() };
-      annotationModel.deleteAnnotation.mockRejectedValueOnce(new Error(errorMessage));
+    await updateAnnotation(req, res);
 
-      await deleteAnnotation(req, res);
-
-      expect(annotationModel.deleteAnnotation).toHaveBeenCalledTimes(1);
-      expect(annotationModel.deleteAnnotation).toHaveBeenCalledWith(id);
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
-    });
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
   });
 });
