@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "ts-node server.ts",
     "dev": "nodemon --exec ts-node server.ts"
   },
@@ -31,8 +31,11 @@
     "@types/cookie-parser": "^1.4.5",
     "@types/cors": "^2.8.15",
     "@types/express": "^4.17.20",
+    "@types/jest": "^29.5.11",
     "@types/jsonwebtoken": "^9.0.4",
+    "jest": "^29.7.0",
     "nodemon": "^3.0.1",
+    "ts-jest": "^29.1.2",
     "typescript": "^5.2.2"
   }
 }
