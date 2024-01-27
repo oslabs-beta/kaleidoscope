@@ -1,13 +1,93 @@
-import { Request, Response } from 'express';
-import { Annotation } from '../types';
-import annotationModel from '../models/annotationModel';
-import { getAnnotationById, getAnnotations, createAnnotation, updateAnnotation, deleteAnnotation,  } from '../controllers/annotationController';
+import { Request, Response } from "express";
+import { Annotation } from "../types";
+import annotationModel from "../models/annotationModel";
+import {
+  getAnnotationById,
+  getAnnotations,
+  createAnnotation,
+  updateAnnotation,
+  deleteAnnotation,
+} from "../controllers/annotationController";
 
-jest.mock('../models/annotationModel');
+jest.mock("../models/annotationModel");
 
-describe()
+describe("getAnnotationById", () => {
+  it("should return 404 if annotation not found", async () => {
+    const req = {
+      params: {
+        id: "1",
+      },
+    } as any;
 
-describe('getAnnotations', () => {
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+      sendStatus: jest.fn(),
+      json: jest.fn()
+    } as any;
+
+    (annotationModel.getAnnotationById as jest.Mock).mockResolvedValueOnce(
+      null
+    );
+
+    await getAnnotationById(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  it("should return 500 on error", async () => {
+    const req = {
+      params: {
+        id: "1",
+      },
+    } as any;
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    } as any;
+
+    (annotationModel.getAnnotationById as jest.Mock).mockRejectedValueOnce(
+      new Error("Failed to get annotation")
+    );
+
+    await getAnnotationById(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: "Failed to fetch annotation",
+    });
+  });
+
+  it("should return 200 and annotation data on success", async () => {
+    const req = {
+      params: {
+        id: "1",
+      },
+    } as any;
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    } as any;
+
+    const expectedAnnotation = {
+      id: 1,
+      text: "Test annotation",
+    };
+
+    (annotationModel.getAnnotationById as jest.Mock).mockResolvedValueOnce(
+      expectedAnnotation
+    );
+
+    await getAnnotationById(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(expectedAnnotation);
+  });
+});
+
+describe("getAnnotations", () => {
   let req: Request;
   let res: Response;
 
@@ -23,9 +103,14 @@ describe('getAnnotations', () => {
     jest.clearAllMocks();
   });
 
-  it('should fetch annotations and return 200 status code', async () => {
-    const mockAnnotations = [{ id: 1, text: 'Annotation 1' }, { id: 2, text: 'Annotation 2' }];
-    (annotationModel.getAllAnnotations as jest.Mock).mockResolvedValueOnce(mockAnnotations);
+  it("should fetch annotations and return 200 status code", async () => {
+    const mockAnnotations = [
+      { id: 1, text: "Annotation 1" },
+      { id: 2, text: "Annotation 2" },
+    ];
+    (annotationModel.getAllAnnotations as jest.Mock).mockResolvedValueOnce(
+      mockAnnotations
+    );
 
     await getAnnotations(req, res);
 
@@ -34,9 +119,11 @@ describe('getAnnotations', () => {
     expect(res.json).toHaveBeenCalledWith(mockAnnotations);
   });
 
-  it('should return 500 status code if fetching annotations fails', async () => {
-    const errorMessage = 'Failed to fetch annotations.';
-    (annotationModel.getAllAnnotations as jest.Mock).mockRejectedValueOnce(new Error(errorMessage));
+  it("should return 500 status code if fetching annotations fails", async () => {
+    const errorMessage = "Failed to fetch annotations.";
+    (annotationModel.getAllAnnotations as jest.Mock).mockRejectedValueOnce(
+      new Error(errorMessage)
+    );
 
     await getAnnotations(req, res);
 
@@ -45,14 +132,16 @@ describe('getAnnotations', () => {
   });
 });
 
-describe('updateAnnotation', () => {
+describe("updateAnnotation", () => {
   let req: Request;
   let res: Response;
 
   beforeEach(() => {
     req = {
-      params: { id: '1' },
-      body: { /* provide the necessary request body here */ },
+      params: { id: "1" },
+      body: {
+        /* provide the necessary request body here */
+      },
     } as unknown as Request;
     res = {
       status: jest.fn().mockReturnThis(),
@@ -66,7 +155,8 @@ describe('updateAnnotation', () => {
     jest.clearAllMocks();
   });
 
-  it('should update the annotation and return 204 status code', async () => {
+  it("should update the annotation and return 204 status code", async () => {
+    (annotationModel.updateAnnotation as jest.Mock).mockResolvedValueOnce(undefined);
     await updateAnnotation(req, res);
 
     expect(annotationModel.updateAnnotation).toHaveBeenCalledWith(1, req.body);
@@ -74,18 +164,20 @@ describe('updateAnnotation', () => {
     expect(res.end).toHaveBeenCalled();
   });
 
-  it('should return 400 status code if ID is not a number', async () => {
-    req.params.id = 'invalid';
+  it("should return 400 status code if ID is not a number", async () => {
+    req.params.id = "invalid";
 
     await updateAnnotation(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.send).toHaveBeenCalledWith('Invalid ID format');
+    expect(res.send).toHaveBeenCalledWith("Invalid ID format");
   });
 
-  it('should return 500 status code if updating the annotation fails', async () => {
-    const errorMessage = 'Failed to update annotation.';
-    (annotationModel.updateAnnotation as jest.Mock).mockRejectedValueOnce(new Error(errorMessage));
+  it("should return 500 status code if updating the annotation fails", async () => {
+    const errorMessage = "Failed to update annotation.";
+    (annotationModel.updateAnnotation as jest.Mock).mockRejectedValueOnce(
+      new Error(errorMessage)
+    );
 
     await updateAnnotation(req, res);
 

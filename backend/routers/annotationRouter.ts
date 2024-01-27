@@ -1,12 +1,13 @@
 import express from 'express';
 import * as annotationController from '../controllers/annotationController';
+import validateId from '../middlewares/validateId';
 
 const router = express.Router();
 
 router.get('/', annotationController.getAnnotations);
+router.get('/:id', validateId, annotationController.getAnnotationById); 
 router.post('/', annotationController.createAnnotation);
-router.put('/:id', annotationController.updateAnnotation);
-// router.get('/:id', annotationController.getAnnotationById); <- this needs to be created in annotation Controller
+router.put('/:id', validateId, annotationController.updateAnnotation);
 router.delete('/:id', annotationController.deleteAnnotation);
 
 
