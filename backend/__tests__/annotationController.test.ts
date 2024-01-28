@@ -22,7 +22,7 @@ describe("getAnnotationById", () => {
       status: jest.fn().mockReturnThis(),
       send: jest.fn(),
       sendStatus: jest.fn(),
-      json: jest.fn()
+      json: jest.fn(),
     } as any;
 
     (annotationModel.getAnnotationById as jest.Mock).mockResolvedValueOnce(
@@ -155,7 +155,9 @@ describe("updateAnnotation", () => {
   });
 
   it("should update the annotation and return 204 status code", async () => {
-    (annotationModel.updateAnnotation as jest.Mock).mockResolvedValueOnce(undefined);
+    (annotationModel.updateAnnotation as jest.Mock).mockResolvedValueOnce(
+      undefined
+    );
     await updateAnnotation(req, res);
 
     expect(annotationModel.updateAnnotation).toHaveBeenCalledWith(1, req.body);
@@ -252,7 +254,9 @@ describe("deleteAnnotation", () => {
   });
 
   it("should delete the annotation and return 204 status code", async () => {
-    (annotationModel.deleteAnnotation as jest.Mock).mockResolvedValueOnce(undefined);
+    (annotationModel.deleteAnnotation as jest.Mock).mockResolvedValueOnce(
+      undefined
+    );
     await deleteAnnotation(req, res);
 
     expect(annotationModel.deleteAnnotation).toHaveBeenCalledWith(1);
