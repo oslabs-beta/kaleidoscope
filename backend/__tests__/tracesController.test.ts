@@ -26,7 +26,7 @@ describe("tracesController", () => {
           callback();
         }
       }),
-      body: null,
+      body: {},
     };
     mockRes = {
       status: jest.fn().mockReturnThis(),
@@ -86,8 +86,8 @@ describe("tracesController", () => {
     it("should decode trace data", async () => {
       const mockRoot = {
         lookupType: jest.fn().mockReturnValue({
-          decode: jest.fn(),
-          toObject: jest.fn(),
+          decode: jest.fn().mockReturnValue({}),
+          toObject: jest.fn().mockReturnValue({}),
         }),
       };
       (protobuf.load as jest.Mock).mockResolvedValueOnce(mockRoot);
