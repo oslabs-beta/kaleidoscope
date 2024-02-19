@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import nodemapRouter from './routers/nodemapRouter';
 import tracesRouter from './routers/tracesRouter';
-import { initializeDatabase } from './models/annotationModel';
+import  { initializeDatabase }  from './models/annotationModel';
 import { authenticateJWT } from './middlewares/authenticateJWT';
 import annotationRouter from './routers/annotationRouter';
 import dotenv from 'dotenv';
@@ -21,7 +21,7 @@ console.log('MONGODB_URI:', process.env.MONGODB_URI);
 
 const PORT = 3001;
 
-const app = express();
+export const app = express();
 
 const corsOptions = {
     origin: 'http://localhost:3000',
