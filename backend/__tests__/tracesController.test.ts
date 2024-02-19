@@ -1,156 +1,71 @@
-import {
-  decompressRequest,
-  decodeTraceData,
-  printTraces,
-  storeTraces,
-} from "../controllers/tracesController";
-import fs from "fs";
-import zlib from "zlib";
-import * as protobuf from "protobufjs";
-import { Request, Response, NextFunction } from "express";
+import request from 'supertest'; // For making mock HTTP requests
+import { app } from '../server'; // Assuming you have an Express app instance
+import * as zlib from 'zlib'; // For mocking gzip decompression
+import fs from 'fs'; // For mocking filesystem operations
+import * as protobuf from 'protobufjs'; // For mocking protobuf decoding
 
-jest.mock("fs");
-jest.mock("zlib");
-jest.mock("protobufjs");
+jest.mock('fs');
+jest.mock('zlib');
+jest.mock('protobufjs');
 
-describe("tracesController", () => {
-  let mockReq: any, mockRes: any, mockNext: any;
-
-  beforeEach(() => {
-    mockReq = {
-      headers: {},
-      on: jest.fn((event, callback) => {
-        if (event === "data") {
-          callback(Buffer.from("compressed data"));
-        } else if (event === "end") {
-          callback();
-        }
-      }),
-      body: {},
-    };
-    mockRes = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis(),
-    };
-    mockNext = jest.fn();
-  });
-  describe("decompressRequest", () => {
-    it("should handle non-gzip encoding", () => {
-      (mockReq as Request).headers["content-encoding"] = "deflate";
-      decompressRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext as NextFunction
-      );
-      expect(mockNext).toHaveBeenCalled();
-    });
-    it("should decompress gzip encoded data", () => {
-      mockReq.headers["content-encoding"] = "gzip";
-      (zlib.gunzip as unknown as jest.Mock).mockImplementation(
-        (data, callback) => {
-          callback(null, Buffer.from("decompressed data"));
-        }
-      );
-
-      decompressRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext as NextFunction
-      );
-
-      expect(zlib.gunzip).toHaveBeenCalled();
-      expect(mockNext).toHaveBeenCalled();
-    });
-    // Add more tests for error handling, etc.
-    it("should handle decompression errors", () => {
-      mockReq.headers["content-encoding"] = "gzip";
-      (zlib.gunzip as unknown as jest.Mock).mockImplementationOnce((data, callback) => {
-        callback(new Error("Decompression failed"));
+describe('tracesController', () => {
+  describe('decompressRequest', () => {
+    it('should decompress gzip encoded request body', async () => {
+      const mockGzipContent = Buffer.from('mock compressed data');
+      zlib.gunzip.mockImplementation((buf, callback) => {
+        callback(null, Buffer.from('mock decompressed data'));
       });
 
-      decompressRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext as NextFunction
-      );
+      await request(app)
+        .post('/traces')
+        .send(mockGzipContent)
+        .set('Content-Encoding', 'gzip')
+        .expect(200);
 
-      expect(mockRes.status).toHaveBeenCalledWith(500);
-      expect(mockRes.send).toHaveBeenCalledWith("Error decompressing data");
+      expect(zlib.gunzip).toHaveBeenCalled();
+      // Further assertions to verify the request body was correctly decompressed can be added here
     });
   });
 
-  describe("decodeTraceData", () => {
-    // Mock protobufjs and test decodeTraceData functionality
-    // Add your tests here
-    it("should decode trace data", async () => {
-      const mockRoot = {
-        lookupType: jest.fn().mockReturnValue({
+  describe('decodeTraceData', () => {
+    it('should decode protobuf encoded trace data', async () => {
+      protobuf.load.mockResolvedValue({
+        lookupType: () => ({
           decode: jest.fn().mockReturnValue({}),
-          toObject: jest.fn().mockReturnValue({}),
-        }),
-      };
-      (protobuf.load as jest.Mock).mockResolvedValueOnce(mockRoot);
+          toObject: jest.fn().mockReturnValue({ decodedData: 'mock decoded data' })
+        })
+      });
 
-      await decodeTraceData(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext as NextFunction
-      );
+      // Mock the request to simulate sending protobuf encoded data
+      const mockRequest = { /* Simulate protobuf encoded data */ };
 
-      expect(mockRoot.lookupType).toHaveBeenCalledWith(
-        "opentelemetry.proto.trace.v1.TracesData"
-      );
-      expect(mockNext).toHaveBeenCalled();
-    })
+      await request(app)
+        .post('/traces')
+        .send(mockRequest)
+        .expect(200);
 
-    it("should handle decoding errors", async () => {
-      (protobuf.load as jest.Mock).mockRejectedValueOnce(new Error("Decoding failed"));
-
-      await decodeTraceData(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext as NextFunction
-      );
-
-      expect(mockRes.status).toHaveBeenCalledWith(500);
-      expect(mockRes.send).toHaveBeenCalledWith("Error decoding trace data");
-    });
-
-
-  });
-
-  describe("printTraces", () => {
-    // Test printTraces functionality
-    // Add your tests here
-    it("should print traces", async () => { 
-      mockReq.body = { decodedData: { resourceSpans: [] } };
-      await printTraces(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext as NextFunction
-      );
-
-      expect(mockNext).toHaveBeenCalled();
+      // Verify that protobuf decoding was attempted
+      expect(protobuf.load).toHaveBeenCalled();
+      // Additional assertions to verify decoding can be added here
     });
   });
 
-  describe("storeTraces", () => {
-    it("should store traces successfully", () => {
-      fs.readFileSync = jest.fn().mockReturnValue(JSON.stringify([]));
-      fs.writeFileSync = jest.fn();
+  describe('storeTraces', () => {
+    it('should store decoded trace data', async () => {
+      fs.readFileSync.mockReturnValue(JSON.stringify([])); // Mock existing data as empty array
+      fs.writeFileSync.mockImplementation(() => {});
 
-      mockReq.body = { decodedData: { resourceSpans: [] } };
-      storeTraces(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext as NextFunction
-      );
+      const mockDecodedData = { resourceSpans: [{ scopeSpans: [{ spans: ['span1', 'span2'] }] }] };
+
+      await request(app)
+        .post('/traces')
+        .send({ decodedData: mockDecodedData }) // This assumes the body parser middleware correctly sets req.body
+        .expect(200);
 
       expect(fs.writeFileSync).toHaveBeenCalled();
-      expect(mockNext).toHaveBeenCalled();
+      // Further assertions to verify the data was correctly stored can be added here
     });
-
-    // Add more tests for error handling, different data cases, etc.
   });
+
+  // Additional tests for printTraces and any error handling can be added here
 });

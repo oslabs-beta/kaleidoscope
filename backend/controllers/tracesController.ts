@@ -63,7 +63,7 @@ export async function printTraces(req: Request, res: Response, next: NextFunctio
         console.log('req.body.decodedData.resourceSpans[0].scopeSpans[0]', req.body.decodedData.resourceSpans[0].scopeSpans[0]);
         return next();
     } catch (err) {
-        res.status(500).json({ error: 'Failed to fetch annotations.' });
+        res.status(500).json({ error: 'Failed to print traces.' });
     }
 }
 
