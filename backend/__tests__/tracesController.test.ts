@@ -1,117 +1,97 @@
-import { storeTraces } from '../controllers/tracesController';
-import { Request, Response, NextFunction } from 'express';
-import fs from 'fs';
+import {
+  storeTraces,
+  decompressRequest,
+  decodeTraceData,
+} from "../controllers/tracesController";
+import { Request, Response, NextFunction } from "express";
+import fs from "fs";
+import zlib from "zlib";
+import { ParsedQs } from "qs";
+import { ParamsDictionary } from "express-serve-static-core";
+import { EventEmitter } from "events";
 
-describe('storeTraces', () => {
-  let req: Request;
-  let res: Response;
-  let next: NextFunction;
+describe("tracesController", () => {
+  // New test case for decompressRequest function
+  describe("decompressRequest", () => {
+    let req: Request;
+    let res: Response;
+    let next: NextFunction;
 
-  beforeEach(() => {
-    req = {} as Request;
-    res = {} as Response;
-    next = jest.fn();
-    jest.spyOn(fs, 'readFileSync').mockImplementation(() => /* simulate successful read */);
-    jest.spyOn(fs, 'writeFileSync').mockImplementation(() => /* simulate successful write */);
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  it('should store traces successfully', () => {
-    const existingData = [{ id: 1, name: 'Trace 1' }];
-    const newData = [{ id: 2, name: 'Trace 2' }];
-
-    jest.spyOn(fs, 'readFileSync').mockReturnValueOnce(
-      Buffer.from(JSON.stringify(existingData))
-    );
-    jest.spyOn(fs, 'writeFileSync').mockImplementationOnce(() => {});
-
-    req.body = {
-      decodedData: {
-        resourceSpans: [
-          {
-            scopeSpans: [
-              {
-                spans: newData
-              }
-            ]
-          }
-        ]
-      }
-    };
-
-    storeTraces(req, res, next);
-
-    expect(fs.readFileSync).toHaveBeenCalledWith('./../tracestore.json');
-    expect(fs.writeFileSync).toHaveBeenCalledWith(
-      './../tracestore.json',
-      JSON.stringify([...existingData, ...newData], null, 2)
-    );
-    expect(next).toHaveBeenCalled();
-  });
-
-  it('should handle errors when reading from file', () => {
-    const error = new Error('File read error');
-    jest.spyOn(fs, 'readFileSync').mockImplementationOnce(() => {
-      throw error;
+    beforeEach(() => {
+      req = {} as Request;
+      res = {} as Response;
+      next = jest.fn();
+      jest.spyOn(console, "error").mockImplementation(() => {});
     });
 
-    storeTraces(req, res, next);
-
-    expect(fs.readFileSync).toHaveBeenCalledWith('./../tracestore.json');
-    expect(console.error).toHaveBeenCalledWith(
-      'Error reading from file:',
-      error
-    );
-    expect(next).not.toHaveBeenCalled();
-  });
-
-  it('should handle errors when storing traces', () => {
-    const existingData = [{ id: 1, name: 'Trace 1' }];
-    const newData = [{ id: 2, name: 'Trace 2' }];
-    const error = new Error('File write error');
-
-    jest.spyOn(fs, 'readFileSync').mockReturnValueOnce(
-      Buffer.from(JSON.stringify(existingData))
-    );
-    jest.spyOn(fs, 'writeFileSync').mockImplementationOnce(() => {
-      throw error;
+    afterEach(() => {
+      jest.restoreAllMocks();
     });
 
-    req.body = {
-      decodedData: {
-        resourceSpans: [
-          {
-            scopeSpans: [
-              {
-                spans: newData
-              }
-            ]
-          }
-        ]
-      }
-    };
+    it("should proceed without decompression if content-encoding is not gzip", () => {
+      req.headers = {
+        "content-encoding": "deflate",
+      };
 
-    const sendMock = jest.fn();
-    res.status = jest.fn().mockReturnValueOnce({ send: sendMock });
+      decompressRequest(req, res, next);
 
-    storeTraces(req, res, next);
+      expect(next).toHaveBeenCalled();
+      expect(console.error).not.toHaveBeenCalled();
+    });
 
-    expect(fs.readFileSync).toHaveBeenCalledWith('./../tracestore.json');
-    expect(fs.writeFileSync).toHaveBeenCalledWith(
-      './../tracestore.json',
-      JSON.stringify([...existingData, ...newData], null, 2)
-    );
-    expect(console.error).toHaveBeenCalledWith(
-      'Error storing traces:',
-      error
-    );
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(sendMock).toHaveBeenCalledWith('Error storing traces');
-    expect(next).not.toHaveBeenCalled();
+    it("should decompress data successfully", (done) => {
+      const originalData = "original data";
+      const compressedData = zlib.gzipSync(originalData);
+
+      const req = new EventEmitter() as unknown as Request;
+      req.headers = { "content-encoding": "gzip" };
+
+      const res = {} as Response;
+      const next = jest.fn().mockImplementation(() => {
+        expect(req.body.toString()).toBe(originalData);
+        expect(next).toHaveBeenCalled();
+        done();
+      });
+
+      decompressRequest(req, res, next);
+
+      req.emit("data", compressedData);
+      req.emit("end");
+    });
   });
 });
 
+it("should decode trace data successfully", async () => {
+  const req = {
+    body: Buffer.from("Your protobuf data", "binary"), // replace 'Your protobuf data' with your actual data
+  } as unknown as Request;
+  const res = {
+    status: jest.fn().mockReturnThis(),
+    send: jest.fn(),
+  } as unknown as Response;
+  const next = jest.fn();
+
+  req.body = Buffer.from("encoded data");
+
+  await decodeTraceData(req, res, next);
+
+  expect(next).toHaveBeenCalled();
+  expect(req.body.decodedData).toBeDefined();
+});
+
+it("should handle error when decoding trace data", async () => {
+  const req = {} as Request;
+  const res = {
+    status: jest.fn().mockReturnThis(),
+    send: jest.fn(),
+  } as unknown as Response;
+  const next = jest.fn();
+
+  req.body = Buffer.from("invalid data");
+
+  await decodeTraceData(req, res, next);
+
+  expect(console.error).toHaveBeenCalled();
+  expect(res.status).toHaveBeenCalledWith(500);
+  expect(res.send).toHaveBeenCalledWith("Error decoding trace data");
+});

@@ -27,7 +27,6 @@ export function decompressRequest(req: Request, res: Response, next: NextFunctio
             }
 
             req.body = decompressedData;
-            console.log('Decompression successful!')
             next();
         });
     });
