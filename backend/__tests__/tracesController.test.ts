@@ -3,6 +3,7 @@ import {
   decompressRequest,
   decodeTraceData,
 } from "../controllers/tracesController";
+import { generateProtobufData } from "./testHelpers"; 
 import { Request, Response, NextFunction } from "express";
 import fs from "fs";
 import zlib from "zlib";
@@ -62,16 +63,16 @@ describe("tracesController", () => {
 });
 
 it("should decode trace data successfully", async () => {
+  const protobufData = await generateProtobufData(); // generate the protobuf data
+
   const req = {
-    body: Buffer.from("Your protobuf data", "binary"), // replace 'Your protobuf data' with your actual data
+    body: protobufData, // use the protobuf data
   } as unknown as Request;
   const res = {
     status: jest.fn().mockReturnThis(),
     send: jest.fn(),
   } as unknown as Response;
   const next = jest.fn();
-
-  req.body = Buffer.from("encoded data");
 
   await decodeTraceData(req, res, next);
 
